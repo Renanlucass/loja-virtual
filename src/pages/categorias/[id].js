@@ -1,0 +1,85 @@
+import Link from 'next/link';
+import ProductCard from '../../components/ProductCard';
+
+async function getDirectusData(endpoint) {
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}${endpoint}`);
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data.data;
+    } catch (error) {
+        console.error(error.message);
+        return [];
+    }
+}
+
+export default function CategoriaPage({ categoria, produtos }) {
+    if (!categoria) {
+        return <p>Categoria não encontrada.</p>;
+    }
+
+    return (
+        <main className="container mx-auto px-4 py-8">
+            <div className="mb-8">
+                <Link 
+                    href="/" 
+                    className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span>Voltar para todas as categorias</span>
+                </Link>
+            </div>
+            
+            <h2 className="text-4xl font-bold mb-8 text-gray-800">
+                {categoria.nome}
+            </h2>
+
+            {produtos && produtos.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {produtos.map((prod) => (
+                        <ProductCard key={prod.id} product={prod} />
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-gray-600">Nenhum produto encontrado nesta categoria ainda.</p>
+            )}
+        </main>
+    );
+}
+
+export async function getStaticPaths() {
+    const categorias = await getDirectusData('/items/Categorias?fields=id');
+    
+    const paths = categorias.map((cat) => ({
+        params: { id: String(cat.id) },
+    }));
+
+    return {
+        paths,
+        fallback: 'blocking',
+    };
+}
+
+export async function getStaticProps({ params }) {
+    const id = params.id;
+
+    const categoriaData = await getDirectusData(`/items/Categorias?filter[id][_eq]=${id}&limit=1`);
+
+    const produtosData = await getDirectusData(`/items/Produtos?fields=*,imagem_produtos.*&filter[categoria][id][_eq]=${id}`);
+
+    if (!categoriaData || categoriaData.length === 0) {
+        return {
+            notFound: true,
+        };
+    }
+
+    return {
+        props: {
+            categoria: categoriaData[0],
+            produtos: produtosData,
+        },
+        revalidate: 60,
+    };
+}
