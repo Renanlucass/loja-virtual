@@ -9,6 +9,8 @@ module.exports = {
     },
     plugins: {
       "@tailwindcss/postcss": {},
+      "@tailwindcss/typography": {},
+      "@tailwindcss/line-clamp": {},
     },
   };
   

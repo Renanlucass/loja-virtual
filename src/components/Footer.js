@@ -92,7 +92,7 @@ export default function Footer() {
     return (
         <>
             <footer className="bg-[#e6a6ba] text-gray-700">
-                <div className="container mx-auto px-4 py-10">
+                <div className="container mx-auto px-4 py-5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div>
                             <h3 className="text-lg font-bold text-purple-700 mb-4">Atendimento ao cliente</h3>
@@ -126,7 +126,7 @@ export default function Footer() {
                             </div>
                             <button 
                                 onClick={() => setModalAberto(true)}
-                                className="mt-3 inline-flex items-center space-x-2 text-sm font-semibold text-purple-700 border border-purple-200 rounded-full py-1 px-3 hover:bg-purple-100 hover:border-purple-300 transition-colors disabled:opacity-50"
+                                className="mt-3 inline-flex items-center cursor-pointer space-x-2 text-sm font-semibold text-purple-700 border border-purple-200 rounded-full py-1 px-3 hover:bg-purple-100 hover:border-purple-300 transition-colors disabled:opacity-50"
                                 disabled={loading}
                             >
                                 <ClockIcon />

@@ -1,34 +1,12 @@
-import Image from 'next/image';
-import Link from 'next/link';
 import ProductCard from '../components/ProductCard';
+import CategoryCarousel from '../components/CategoryCarousel'; 
 
 export default function HomePage({ categorias, produtosDestaque }) {
+
   return (
     <main className="container mx-auto px-4 py-8">
-      <section>
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Navegue por Categorias</h2>
-        {categorias && categorias.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8">
-            {categorias.map((cat, index) => (
-              <Link href={`/categorias/${cat.id}`} key={cat.id} className="group block">
-                <div className="relative aspect-video rounded-lg overflow-hidden shadow-md transform transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
-                  {cat.imagem_ilustrativa && (
-                    <Image
-                      src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${cat.imagem_ilustrativa}`}
-                      alt={cat.nome || 'Categorias'}
-                      fill
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                      className="object-cover"
-                      priority={index === 0} 
-                    />
-                  )}
-                </div>
-                <h3 className="mt-3 text-lg font-semibold text-gray-700 text-center">{cat.nome}</h3>
-              </Link>
-            ))}
-          </div>
-        ) : <p>Categorias não encontradas.</p>}
-      </section>
+
+      <CategoryCarousel categorias={categorias} />
 
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Produtos em Destaque</h2>
@@ -43,6 +21,7 @@ export default function HomePage({ categorias, produtosDestaque }) {
     </main>
   );
 }
+
 export async function getStaticProps() {
   async function getDirectusData(endpoint) {
     try {
