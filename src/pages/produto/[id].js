@@ -44,7 +44,7 @@ export default function ProdutoPage({ product }) {
     };
 
     const handleContactClick = () => {
-        const phoneNumber = '89981016717';
+        const phoneNumber = '5589981016717';
         const message = `Olá! Tenho interesse no produto: ${product.nome} - ${formatPrice(product.preco)}.`;
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
@@ -89,22 +89,12 @@ export default function ProdutoPage({ product }) {
                             {product.descricao && (
                                 <div className="mt-8 border-t pt-8">
                                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Descrição</h2>
-                                    <div 
-                                        className="prose prose-sm text-gray-600 max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: product.descricao }} 
-                                    />
+                                    <div className="text-gray-600 whitespace-pre-line">
+                                        {product.descricao}
+                                    </div>
                                 </div>
                             )}
 
-                            {product.caracteristicas && (
-                                <div className="mt-8">
-                                    <h2 className="text-lg font-semibold text-gray-800 mb-4">O que você precisa saber</h2>
-                                    <div 
-                                        className="prose prose-sm text-gray-600 max-w-none prose-ul:list-disc prose-ul:pl-5"
-                                        dangerouslySetInnerHTML={{ __html: product.caracteristicas }} 
-                                    />
-                                </div>
-                            )}
                         </div>
                         
                         <div className="mt-8 space-y-4">
