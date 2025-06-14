@@ -31,7 +31,7 @@ export default function CarrinhoPage() {
                 Voltar
             </button>
 
-            <h1 className="text-4xl font-bold text-gray-900 mb-10 text-center">Seu Carrinho</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 sm:mb-10 text-center">Seu Carrinho</h1>
 
             {cartItems.length === 0 ? (
                 <div className="text-center py-20 border rounded-xl bg-white shadow-md">
@@ -42,11 +42,11 @@ export default function CarrinhoPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                    {/* Lista de Itens */}
+
                     <div className="lg:col-span-2 space-y-5">
                         {cartItems.map(item => (
-                            <div key={item.id} className="flex items-center space-x-5 p-5 border rounded-xl bg-white shadow-sm">
-                                <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                            <div key={item.id} className="flex items-center space-x-3 sm:space-x-5 p-3 sm:p-5 border rounded-xl bg-white shadow-sm">
+                                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden flex-shrink-0">
                                     {item.imagem_produto ? (
                                         <Image 
                                             src={item.imagem_produto}
@@ -59,14 +59,20 @@ export default function CarrinhoPage() {
                                     )}
                                 </div>
                                 <div className="flex-grow">
-                                    <p className="font-semibold text-lg">{item.nome}</p>
-                                    <p className="text-purple-700 text-xl font-bold">{formatPrice(item.preco)}</p>
+                                    <p className="font-semibold text-base sm:text-lg">{item.nome}</p>
+                                    <p className="text-purple-700 text-lg sm:text-xl font-bold">{formatPrice(item.preco)}</p>
                                 </div>
 
-                                <div className="flex items-center space-x-2">
-                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-3 py-1 border rounded-lg hover:bg-gray-100 text-lg">-</button>
-                                    <span className="font-semibold w-10 text-center text-lg">{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-3 py-1 border rounded-lg hover:bg-gray-100 text-lg">+</button>
+                                <div className="flex items-center space-x-1 sm:space-x-2">
+                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 sm:px-3 py-1 border rounded-lg hover:bg-gray-100 text-lg">-</button>
+                                    <span className="font-semibold w-8 text-center text-base sm:text-lg">{item.quantity}</span>
+                                    <button 
+                                        onClick={() => updateQuantity(item.id, item.quantity + 1)} 
+                                        className="px-2 sm:px-3 py-1 border rounded-lg hover:bg-gray-100 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={item.quantity >= item.estoque}
+                                    >
+                                        +
+                                    </button>
                                 </div>
 
                                 <button onClick={() => removeFromCart(item.id)} aria-label="Remover item">
@@ -78,19 +84,14 @@ export default function CarrinhoPage() {
 
                     <div className="lg:col-span-1 p-6 border rounded-xl bg-white shadow-md sticky top-28">
                         <h2 className="text-2xl font-semibold mb-4 pb-2 border-b">Resumo do Pedido</h2>
-
                         <div className="flex justify-between mb-6">
                             <span>Subtotal</span>
                             <span className="font-bold text-lg">{formatPrice(subtotal)}</span>
                         </div>
 
-                        <button className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition">
+                        <Link href="/checkout" className="block w-full text-center bg-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition">
                             Finalizar Pedido
-                        </button>
-
-                        <div className="text-center text-sm text-gray-500 mt-4">
-                            * Frete e taxas calculados posteriormente.
-                        </div>
+                        </Link>
                     </div>
                 </div>
             )}

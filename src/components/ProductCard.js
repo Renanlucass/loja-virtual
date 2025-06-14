@@ -12,7 +12,7 @@ const formatPrice = (price) => {
 };
 
 export default function ProductCard({ product }) {
-  const { addToCart } = useCart();
+  const { addToCart, cartItems } = useCart();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -20,6 +20,11 @@ export default function ProductCard({ product }) {
   if (!product) {
     return null;
   }
+
+  const itemInCart = cartItems.find(item => item.id === product.id);
+  const quantityInCart = itemInCart ? itemInCart.quantity : 0;
+
+  const availableStock = product.estoque - quantityInCart;
 
   const imageUrl = product.imagem_produto;
   
@@ -64,9 +69,10 @@ export default function ProductCard({ product }) {
           <p className="text-2xl font-bold text-purple-700 my-3">{formatPrice(product.preco)}</p>
           <button 
             onClick={handleOpenModal}
-            className="mt-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white w-full py-3 rounded-full font-semibold text-sm shadow-lg hover:from-purple-700 hover:to-pink-600 transition-all duration-300"
+            className="mt-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white w-full py-3 rounded-full font-semibold text-sm shadow-lg hover:from-purple-700 hover:to-pink-600 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed"
+            disabled={availableStock <= 0}
           >
-            Adicionar ao Carrinho
+            {availableStock > 0 ? 'Adicionar ao Carrinho' : 'Sem estoque'}
           </button>
         </div>
       </div>
@@ -81,21 +87,20 @@ export default function ProductCard({ product }) {
                 </div>
                 <p className="font-semibold text-gray-700 text-left">{product.nome}</p>
             </div>
-
             <div className="flex items-center justify-center space-x-4 my-6">
               <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="h-10 w-10 border rounded-full text-lg font-bold text-purple-600 hover:bg-gray-100">-</button>
               <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
               <button 
-                onClick={() => setQuantity(q => Math.min(product.estoque || q + 1, q + 1))} 
+                onClick={() => setQuantity(q => Math.min(availableStock, q + 1))} 
                 className="h-10 w-10 border rounded-full text-lg font-bold text-purple-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={quantity >= product.estoque}
+                disabled={quantity >= availableStock}
               >
                 +
               </button>
             </div>
-            {product.estoque && (
+            {availableStock > 0 && (
               <p className="text-sm text-gray-500 mb-4 -mt-2">
-                (Apenas {product.estoque} unidades em estoque)
+                (Apenas {availableStock} unidades disponíveis para adicionar)
               </p>
             )}
             <button

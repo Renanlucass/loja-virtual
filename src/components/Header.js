@@ -27,9 +27,7 @@ function CartIcon() {
 
 export default function Header() {
     const { cartItems } = useCart();
-
     const distinctItemsCount = cartItems.length;
-
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
@@ -38,25 +36,24 @@ export default function Header() {
 
   return (
     <header className="bg-[#e6a6ba] shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
-                <Link href="/" className="flex items-center space-x-3">
-                    <div className="relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
-                       <Image
-                          src="/logo-atelie.jpg" 
-                          alt="Logo do Deusinha Ateliê"
-                          layout="fill"
-                          objectFit="contain"
-                       />
-                    </div>
-                    <div>
-                       <h1 className="text-sm sm:text-3xl font-bold text-purple-700">Deusinha Ateliê</h1>
-                       <p className="text-xs sm:text-base text-gray-700 font-medium">Costura, Perfumaria e muito mais!</p>
-                    </div>
-                </Link>
-                
-                <div className="flex items-center space-x-2 sm:space-x-6">
-                    <SearchBar />
+        <div className="container mx-auto px-4 py-4">
+            <div className="flex flex-col space-y-4">
+                <div className="flex items-center justify-between">
+                    <Link href="/" className="flex items-center space-x-3">
+                        <div className="relative h-16 w-28 sm:h-16 sm:w-16 flex-shrink-0">
+                           <Image
+                              src="/logo-atelie.jpg" 
+                              alt="Logo do Deusinha Ateliê"
+                              layout="fill"
+                              objectFit="contain"
+                           />
+                        </div>
+                        <div>
+                           <h1 className="text-xl sm:text-2xl font-bold text-purple-700">Deusinha Ateliê</h1>
+                           <p className="text-xs sm:text-sm text-gray-700 font-medium">Costura, Perfumaria e muito mais!</p>
+                        </div>
+                    </Link>
+                    
                     <Link href="/carrinho" aria-label="Ver carrinho" className="relative group">
                       <CartIcon />
                       {isClient && distinctItemsCount > 0 && (
@@ -65,6 +62,11 @@ export default function Header() {
                         </span>
                       )}
                     </Link>
+                </div>
+                <div className="w-full flex justify-center">
+                    <div className="w-full flex justify-center max-w-lg">
+                        <SearchBar />
+                    </div>
                 </div>
             </div>
         </div>

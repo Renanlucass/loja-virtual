@@ -20,11 +20,11 @@ function SearchIcon() {
   
   export default function SearchBar() {
     return (
-      <div className="relative w-44 max-w-xs">
+      <div className="relative w-full max-w-xs">
         <input
           type="text"
           placeholder="Faça sua busca..."
-          className="w-full pl-5 pr-10 py-2 border-2 border-transparent bg-white/50 rounded-full text-sm placeholder-gray-500 focus:outline-none focus:bg-white focus:border-purple-300 transition-colors"
+          className="w-full pl-5 py-2 flex justify-center border-2 border-transparent bg-white/50 rounded-full text-sm placeholder-gray-500 focus:outline-none focus:bg-white focus:border-purple-300 transition-colors"
         />
         <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
           <SearchIcon />
