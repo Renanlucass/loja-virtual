@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
+import { useRouter } from 'next/router';
 
 function TrashIcon() {
     return (
-        <svg className="w-5 h-5 text-gray-500 hover:text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-5 h-5 text-gray-400 hover:text-red-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
         </svg>
     );
@@ -12,50 +13,62 @@ function TrashIcon() {
 
 const formatPrice = (price) => {
   if (price === null || price === undefined) return '';
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(price);
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(price);
 };
 
 export default function CarrinhoPage() {
     const { cartItems, removeFromCart, updateQuantity } = useCart();
+    const router = useRouter();
 
     const subtotal = cartItems.reduce((total, item) => total + item.preco * item.quantity, 0);
 
     return (
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">Seu Carrinho</h1>
+        <main className="container mx-auto px-4 py-10">
+            <button onClick={() => router.back()} className="inline-flex items-center text-purple-600 font-semibold mb-6 hover:underline">
+                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Voltar
+            </button>
+
+            <h1 className="text-4xl font-bold text-gray-900 mb-10 text-center">Seu Carrinho</h1>
 
             {cartItems.length === 0 ? (
-                <div className="text-center py-12 border rounded-lg">
-                    <p className="text-gray-600 mb-4">Seu carrinho está vazio.</p>
-                    <Link href="/" className="bg-purple-600 text-white py-2 px-6 rounded-md hover:bg-purple-700 transition-colors">
-                        Voltar para a loja
+                <div className="text-center py-20 border rounded-xl bg-white shadow-md">
+                    <p className="text-gray-600 mb-6 text-lg">Seu carrinho está vazio.</p>
+                    <Link href="/" className="bg-purple-600 text-white py-3 px-8 rounded-lg font-semibold hover:bg-purple-700 transition">
+                        Ver produtos
                     </Link>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                    <div className="lg:col-span-2 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                    {/* Lista de Itens */}
+                    <div className="lg:col-span-2 space-y-5">
                         {cartItems.map(item => (
-                            <div key={item.id} className="flex items-center space-x-4 p-4 border rounded-lg bg-white">
-                                <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
-                                    <Image 
-                                        src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${item.imagem_produtos.id}`}
-                                        alt={item.nome}
-                                        fill
-                                        className="object-cover"
-                                    />
+                            <div key={item.id} className="flex items-center space-x-5 p-5 border rounded-xl bg-white shadow-sm">
+                                <div className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                                    {item.imagem_produto ? (
+                                        <Image 
+                                            src={item.imagem_produto}
+                                            alt={item.nome}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-200"></div>
+                                    )}
                                 </div>
                                 <div className="flex-grow">
-                                    <p className="font-semibold">{item.nome}</p>
-                                    <p className="text-lg font-bold text-purple-700">{formatPrice(item.preco)}</p>
+                                    <p className="font-semibold text-lg">{item.nome}</p>
+                                    <p className="text-purple-700 text-xl font-bold">{formatPrice(item.preco)}</p>
                                 </div>
+
                                 <div className="flex items-center space-x-2">
-                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-2 border rounded">-</button>
-                                    <span>{item.quantity}</span>
-                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-2 border rounded">+</button>
+                                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="px-3 py-1 border rounded-lg hover:bg-gray-100 text-lg">-</button>
+                                    <span className="font-semibold w-10 text-center text-lg">{item.quantity}</span>
+                                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="px-3 py-1 border rounded-lg hover:bg-gray-100 text-lg">+</button>
                                 </div>
+
                                 <button onClick={() => removeFromCart(item.id)} aria-label="Remover item">
                                     <TrashIcon />
                                 </button>
@@ -63,15 +76,21 @@ export default function CarrinhoPage() {
                         ))}
                     </div>
 
-                    <div className="lg:col-span-1 p-6 border rounded-lg bg-white sticky top-28">
-                        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Resumo do Pedido</h2>
+                    <div className="lg:col-span-1 p-6 border rounded-xl bg-white shadow-md sticky top-28">
+                        <h2 className="text-2xl font-semibold mb-4 pb-2 border-b">Resumo do Pedido</h2>
+
                         <div className="flex justify-between mb-6">
                             <span>Subtotal</span>
-                            <span className="font-bold">{formatPrice(subtotal)}</span>
+                            <span className="font-bold text-lg">{formatPrice(subtotal)}</span>
                         </div>
-                        <button className="w-full bg-purple-600 text-white py-3 rounded-md font-semibold hover:bg-purple-700 transition-colors">
+
+                        <button className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition">
                             Finalizar Pedido
                         </button>
+
+                        <div className="text-center text-sm text-gray-500 mt-4">
+                            * Frete e taxas calculados posteriormente.
+                        </div>
                     </div>
                 </div>
             )}

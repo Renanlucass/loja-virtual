@@ -1,11 +1,26 @@
+import CategoryCarousel from '../components/CategoryCarousel';
 import ProductCard from '../components/ProductCard';
-import CategoryCarousel from '../components/CategoryCarousel'; 
+
+
+async function getApiData(endpoint) {
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.statusText}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error(error.message);
+        return [];
+    }
+}
 
 export default function HomePage({ categorias, produtosDestaque }) {
 
   return (
     <main className="container mx-auto px-4 py-8">
-
+      
       <CategoryCarousel categorias={categorias} />
 
       <section className="mt-12">
@@ -23,25 +38,10 @@ export default function HomePage({ categorias, produtosDestaque }) {
 }
 
 export async function getStaticProps() {
-  async function getDirectusData(endpoint) {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}${endpoint}`);
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
-      }
-      const data = await response.json();
-      return data.data;
-    } catch (error) {
-      console.error(error.message);
-      return [];
-    }
-  }
-
-  const NOME_CAMPO_IMAGEM_CATEGORIA = 'imagem_ilustrativa';
-
+  
   const [categorias, produtosDestaque] = await Promise.all([
-    getDirectusData(`/items/Categorias?fields=id,nome,${NOME_CAMPO_IMAGEM_CATEGORIA}`),
-    getDirectusData('/items/Produtos?fields=*,imagem_produtos.*&filter[destaque][_eq]=true')
+    getApiData('/categorias'),
+    getApiData('/produtos?destaque=true')
   ]);
 
   return {

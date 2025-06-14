@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import ProductCard from '../../components/ProductCard';
+import { useRouter } from 'next/router';
 
-async function getDirectusData(endpoint) {
+async function getApiData(endpoint) {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}${endpoint}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
         if (!response.ok) {
             throw new Error(`API Error: ${response.statusText}`);
         }
         const data = await response.json();
-        return data.data;
+        return data;
     } catch (error) {
         console.error(error.message);
         return [];
@@ -16,6 +17,12 @@ async function getDirectusData(endpoint) {
 }
 
 export default function CategoriaPage({ categoria, produtos }) {
+    const router = useRouter();
+
+    if (router.isFallback) {
+        return <div className="text-center p-10">Carregando...</div>;
+    }
+    
     if (!categoria) {
         return <p>Categoria não encontrada.</p>;
     }
@@ -50,7 +57,7 @@ export default function CategoriaPage({ categoria, produtos }) {
 }
 
 export async function getStaticPaths() {
-    const categorias = await getDirectusData('/items/Categorias?fields=id');
+    const categorias = await getApiData('/api/categorias');
     
     const paths = categorias.map((cat) => ({
         params: { id: String(cat.id) },
@@ -65,11 +72,12 @@ export async function getStaticPaths() {
 export async function getStaticProps({ params }) {
     const id = params.id;
 
-    const categoriaData = await getDirectusData(`/items/Categorias?filter[id][_eq]=${id}&limit=1`);
+    const [categoriaData, produtosData] = await Promise.all([
+        getApiData(`/categorias/${id}`),
+        getApiData(`/categorias/${id}/produtos`)
+    ]);
 
-    const produtosData = await getDirectusData(`/items/Produtos?fields=*,imagem_produtos.*&filter[categoria][id][_eq]=${id}`);
-
-    if (!categoriaData || categoriaData.length === 0) {
+    if (!categoriaData) {
         return {
             notFound: true,
         };
@@ -77,7 +85,7 @@ export async function getStaticProps({ params }) {
 
     return {
         props: {
-            categoria: categoriaData[0],
+            categoria: categoriaData,
             produtos: produtosData,
         },
         revalidate: 60,

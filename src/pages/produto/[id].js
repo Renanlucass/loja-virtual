@@ -2,15 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useCart } from '../../context/CartContext'; 
-import { useState } from 'react'; 
-
-function CheckIcon() {
-    return (
-        <svg className="h-16 w-16 text-green-500 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-    );
-}
+import { useState } from 'react';
 
 const formatPrice = (price) => {
   if (price === null || price === undefined) return '';
@@ -20,12 +12,13 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-async function getDirectusData(endpoint) {
+
+async function getApiData(endpoint) {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}${endpoint}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
         if (!response.ok) throw new Error("API Error");
         const data = await response.json();
-        return data.data;
+        return data;
     } catch (error) {
         console.error(error.message);
         return null;
@@ -34,8 +27,8 @@ async function getDirectusData(endpoint) {
 
 export default function ProdutoPage({ product }) {
     const router = useRouter();
-    const { addToCart, cartItems } = useCart(); 
-    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const { addToCart } = useCart(); 
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     if (router.isFallback) {
         return <div className="text-center p-10">Carregando...</div>;
@@ -51,16 +44,13 @@ export default function ProdutoPage({ product }) {
     };
 
     const handleContactClick = () => {
-        const phoneNumber = '5511999999999';
+        const phoneNumber = '89981016717';
         const message = `Olá! Tenho interesse no produto: ${product.nome} - ${formatPrice(product.preco)}.`;
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
     };
 
-    const imageId = product.imagem_produtos ? product.imagem_produtos.id : null;
-    const imageUrl = imageId ? `${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${imageId}` : null;
-
-    const totalItemsInCart = cartItems.reduce((total, item) => total + item.quantity, 0);
+    const imageUrl = product.imagem_produto;
 
     return (
         <>
@@ -138,27 +128,40 @@ export default function ProdutoPage({ product }) {
                     </div>
                 </div>
             </main>
+
             {isModalOpen && (
                 <div 
                     className={`fixed inset-0 flex items-center justify-center z-50 p-4 bg-gray-900/20 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 >
                     <div 
-                        className={`bg-white rounded-lg shadow-xl p-8 w-full max-w-md text-center transform transition-all duration-300 ${isModalOpen ? 'scale-100' : 'scale-95'}`}
+                        className={`bg-white rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all duration-300 ${isModalOpen ? 'scale-100' : 'scale-95'}`}
                     >
-                        <CheckIcon />
-                        <h2 className="text-2xl font-bold text-gray-800 mt-4">Produto adicionado ao carrinho!</h2>
-                        <p className="text-gray-600 mt-2">
-                            Você tem {totalItemsInCart} item(ns) no seu carrinho.
-                        </p>
-                        <div className="mt-8 space-y-3">
-                            <Link href="/carrinho" className="block w-full bg-purple-600 text-white py-2.5 rounded-md font-semibold hover:bg-purple-700 transition-colors">
-                                Ver Carrinho
+                        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Produto adicionado ao seu carrinho</h2>
+                        
+                        <div className="flex items-center space-x-4 border-t border-b py-4">
+                            <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
+                                {imageUrl ? (
+                                    <Image src={imageUrl} alt={product.nome} fill className="object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-200"></div>
+                                )}
+                            </div>
+                            <div className="flex-grow">
+                                <p className="font-semibold text-gray-800">{product.nome}</p>
+                                <p className="text-sm text-gray-500">{formatPrice(product.preco)}</p>
+                                <p className="text-sm text-gray-500">Quantidade: 1</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 space-y-3">
+                            <Link href="/carrinho" className="block w-full text-center bg-purple-600 text-white py-2.5 rounded-md font-semibold hover:bg-purple-700 transition-colors">
+                                Ir para o carrinho
                             </Link>
                             <button 
                                 onClick={() => setIsModalOpen(false)}
-                                className="w-full border-2 border-gray-300 text-gray-700 py-2.5 rounded-md font-semibold hover:bg-gray-100 transition-colors"
+                                className="w-full text-center border-2 border-gray-300 text-gray-700 py-2.5 rounded-md font-semibold hover:bg-gray-100 transition-colors"
                             >
-                                Continuar Comprando
+                                Continuar comprando
                             </button>
                         </div>
                     </div>
@@ -169,7 +172,8 @@ export default function ProdutoPage({ product }) {
 }
 
 export async function getStaticPaths() {
-    const produtos = await getDirectusData('/items/Produtos?fields=id');
+
+    const produtos = await getApiData('/produtos');
     const paths = produtos.map((prod) => ({
         params: { id: String(prod.id) },
     }));
@@ -178,7 +182,8 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }) {
     const id = params.id;
-    const productData = await getDirectusData(`/items/Produtos/${id}?fields=*,imagem_produtos.*,caracteristicas`);
+
+    const productData = await getApiData(`/produtos/${id}`);
 
     if (!productData) {
         return { notFound: true };

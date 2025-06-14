@@ -3,15 +3,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 function ArrowLeftIcon() {
-  return (
-    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
-  );
+  return <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>;
 }
 
 function ArrowRightIcon() {
-  return (
-    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
-  );
+  return <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>;
 }
 
 export default function CategoryCarousel({ categorias }) {
@@ -45,6 +41,7 @@ export default function CategoryCarousel({ categorias }) {
               <ArrowRightIcon />
             </button>
           </div>
+          
           <div 
             ref={scrollContainer}
             className="flex space-x-4 overflow-x-auto md:grid md:grid-cols-4 md:gap-x-6 md:gap-y-8 md:space-x-0 p-2 md:p-0 scrollbar-hide"
@@ -53,9 +50,10 @@ export default function CategoryCarousel({ categorias }) {
               <div key={cat.id} className="text-center flex-shrink-0 w-24 md:w-auto">
                 <Link href={`/categorias/${cat.id}`} className="group inline-block">
                   <div className="relative h-24 w-24 md:h-32 md:w-32 mx-auto rounded-full overflow-hidden shadow-lg transform transition-all duration-300 group-hover:shadow-xl group-hover:scale-105">
+
                     {cat.imagem_ilustrativa && (
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/assets/${cat.imagem_ilustrativa}`}
+                        src={cat.imagem_ilustrativa}
                         alt={cat.nome || 'Categorias'}
                         fill
                         sizes="(max-width: 768px) 33vw, 25vw"

@@ -37,13 +37,16 @@ export default function Footer() {
 
     useEffect(() => {
         const checkHorario = (horarioStr) => {
-            if (!horarioStr || horarioStr.toLowerCase() === 'fechado') {
+            if (!horarioStr || horarioStr.toLowerCase().trim() === 'fechado') {
                 return false;
             }
             try {
-                const [startStr, endStr] = horarioStr.split(' às ');
-                const [startHour, startMinute] = startStr.split(':').map(Number);
-                const [endHour, endMinute] = endStr.split(':').map(Number);
+
+                const separador = / às | - /;
+                const [startStr, endStr] = horarioStr.split(separador);
+
+                const [startHour, startMinute] = startStr.trim().split(':').map(Number);
+                const [endHour, endMinute] = endStr.trim().split(':').map(Number);
                 
                 const now = new Date();
                 const startTime = new Date();
@@ -62,13 +65,14 @@ export default function Footer() {
         async function fetchConfig() {
             setLoading(true);
             try {
-                const response = await fetch(`${process.env.NEXT_PUBLIC_DIRECTUS_URL}/items/Configuracoes_Gerais`);
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/configuracoes`);
                 if (!response.ok) throw new Error(`Falha ao buscar configurações: ${response.statusText}`);
-                const data = await response.json();
-                setConfig(data.data);
                 
-                if (data.data) {
-                    const horarioDeHoje = data.data[diasDaSemana[new Date().getDay()].chave];
+                const configData = await response.json();
+                setConfig(configData);
+                
+                if (configData) {
+                    const horarioDeHoje = configData[diasDaSemana[new Date().getDay()].chave];
                     setIsLojaAberta(checkHorario(horarioDeHoje));
                 }
             } catch (error) {

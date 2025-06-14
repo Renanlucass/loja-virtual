@@ -1,19 +1,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import SearchBar from './searchBar';
+import { useCart } from '../context/CartContext';
+import { useState, useEffect } from 'react';
 
 function CartIcon() {
     return (
-        <svg
-            className="h-7 w-7 text-gray-800 hover:text-black transition-colors"
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
+        <svg 
+            className="h-7 w-7 text-gray-800 group-hover:text-black transition-colors" 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="24" 
+            height="24" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
             strokeLinejoin="round"
         >
             <circle cx="9" cy="21" r="1"></circle>
@@ -24,35 +26,48 @@ function CartIcon() {
 }
 
 export default function Header() {
-    return (
-        <header className="bg-[#e6a6ba] shadow-sm sticky top-0 z-50">
-            <div className="container mx-auto px-4">
-                <div className="flex items-center justify-between">
+    const { cartItems } = useCart();
 
-                    <Link href="/" className="flex items-center space-x-4">
-                        <div className="relative h-48 w-48 flex-shrink-0">
-                            <Image
-                                src="/logo-atelie.jpg"
-                                alt="Logo do Deusinha Ateliê"
-                                layout="fill"
-                                objectFit="contain"
-                            />
-                        </div>
+    const distinctItemsCount = cartItems.length;
 
-                        <div className="hidden sm:block pb-1">
-                            <h1 className="text-5xl font-bold text-purple-700">Deusinha Ateliê</h1>
-                            <p className="text-black text-2xl font-semibold">Costura, Perfumaria e muito mais!</p>
-                        </div>
-                    </Link>
+    const [isClient, setIsClient] = useState(false);
 
-                    <div className="flex items-center space-x-4 sm:space-x-6">
-                        <SearchBar />
-                        <Link href="#" aria-label="Ver carrinho">
-                            <CartIcon />
-                        </Link>
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+  return (
+    <header className="bg-[#e6a6ba] shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+                <Link href="/" className="flex items-center space-x-3">
+                    <div className="relative h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
+                       <Image
+                          src="/logo-atelie.jpg" 
+                          alt="Logo do Deusinha Ateliê"
+                          layout="fill"
+                          objectFit="contain"
+                       />
                     </div>
+                    <div>
+                       <h1 className="text-sm sm:text-3xl font-bold text-purple-700">Deusinha Ateliê</h1>
+                       <p className="text-xs sm:text-base text-gray-700 font-medium">Costura, Perfumaria e muito mais!</p>
+                    </div>
+                </Link>
+                
+                <div className="flex items-center space-x-2 sm:space-x-6">
+                    <SearchBar />
+                    <Link href="/carrinho" aria-label="Ver carrinho" className="relative group">
+                      <CartIcon />
+                      {isClient && distinctItemsCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                            {distinctItemsCount}
+                        </span>
+                      )}
+                    </Link>
                 </div>
             </div>
-        </header>
-    );
+        </div>
+    </header>
+  );
 }

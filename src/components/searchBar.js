@@ -20,7 +20,7 @@ function SearchIcon() {
   
   export default function SearchBar() {
     return (
-      <div className="relative w-full max-w-xs">
+      <div className="relative w-44 max-w-xs">
         <input
           type="text"
           placeholder="Faça sua busca..."
