@@ -12,23 +12,26 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-
 async function getApiData(endpoint) {
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
-        if (!response.ok) throw new Error("API Error");
+        if (!response.ok) {
+            console.error(`API Error for endpoint ${endpoint}: ${response.status} ${response.statusText}`);
+            return endpoint.includes('/produtos/') ? null : []; 
+        }
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error(error.message);
-        return null;
+        console.error(`Fetch error for endpoint ${endpoint}:`, error.message);
+        return endpoint.includes('/produtos/') ? null : [];
     }
 }
-
 export default function ProdutoPage({ product }) {
     const router = useRouter();
-    const { addToCart } = useCart(); 
+    const { addToCart, cartItems } = useCart(); 
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [quantity, setQuantity] = useState(1);
 
     if (router.isFallback) {
         return <div className="text-center p-10">Carregando...</div>;
@@ -38,9 +41,14 @@ export default function ProdutoPage({ product }) {
         return <div className="text-center p-10">Produto não encontrado.</div>;
     }
 
-    const handleAddToCart = () => {
-        addToCart(product);
+    const handleOpenModal = () => {
+        setQuantity(1);
         setIsModalOpen(true);
+    };
+
+    const handleConfirmAddToCart = () => {
+        addToCart(product, quantity);
+        setIsModalOpen(false);
     };
 
     const handleContactClick = () => {
@@ -52,27 +60,25 @@ export default function ProdutoPage({ product }) {
 
     const imageUrl = product.imagem_produto;
 
+    const itemInCart = cartItems.find(item => item.id === product.id);
+    const quantityInCart = itemInCart ? itemInCart.quantity : 0;
+    const availableStock = product.estoque - quantityInCart;
+
     return (
         <>
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="mb-8">
-                    <Link href="/" className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors">
+                    <button onClick={() => router.back()} className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 hover:text-purple-800 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        <span>Voltar para a loja</span>
-                    </Link>
+                        <span>Voltar</span>
+                    </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                     <div>
                         <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
                             {imageUrl ? (
-                                <Image
-                                    src={imageUrl}
-                                    alt={product.nome}
-                                    fill
-                                    className="object-cover"
-                                    priority
-                                />
+                                <Image src={imageUrl} alt={product.nome} fill className="object-cover" priority />
                             ) : (
                                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                                     <span className="text-gray-500">Sem Foto</span>
@@ -94,15 +100,15 @@ export default function ProdutoPage({ product }) {
                                     </div>
                                 </div>
                             )}
-
                         </div>
                         
                         <div className="mt-8 space-y-4">
                             <button 
-                                onClick={handleAddToCart}
-                                className="w-full bg-purple-600 text-white py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition-colors"
+                                onClick={handleOpenModal}
+                                className="w-full bg-purple-600 text-white py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                disabled={availableStock <= 0}
                             >
-                                Adicionar ao Pedido
+                                {availableStock > 0 ? 'Adicionar ao Pedido' : 'Sem Estoque'}
                             </button>
                             <Link href="/" className="w-full block text-center border-2 border-purple-600 text-purple-600 py-3 rounded-md text-lg font-semibold hover:bg-purple-50 transition-colors">
                                 Continuar comprando
@@ -120,40 +126,43 @@ export default function ProdutoPage({ product }) {
             </main>
 
             {isModalOpen && (
-                <div 
-                    className={`fixed inset-0 flex items-center justify-center z-50 p-4 bg-gray-900/20 backdrop-blur-sm transition-opacity duration-300 ${isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                >
-                    <div 
-                        className={`bg-white rounded-lg shadow-xl p-6 w-full max-w-md transform transition-all duration-300 ${isModalOpen ? 'scale-100' : 'scale-95'}`}
-                    >
-                        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Produto adicionado ao seu carrinho</h2>
-                        
-                        <div className="flex items-center space-x-4 border-t border-b py-4">
+                <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-gray-900/20 backdrop-blur-sm">
+                    <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm text-center">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4">Selecione a Quantidade</h3>
+                        <div className="flex items-center space-x-4 py-4">
                             <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0">
-                                {imageUrl ? (
-                                    <Image src={imageUrl} alt={product.nome} fill className="object-cover" />
-                                ) : (
-                                    <div className="w-full h-full bg-gray-200"></div>
-                                )}
+                                {imageUrl && <Image src={imageUrl} alt={product.nome} fill className="object-cover" />}
                             </div>
-                            <div className="flex-grow">
-                                <p className="font-semibold text-gray-800">{product.nome}</p>
-                                <p className="text-sm text-gray-500">{formatPrice(product.preco)}</p>
-                                <p className="text-sm text-gray-500">Quantidade: 1</p>
-                            </div>
+                            <p className="font-semibold text-gray-700 text-left">{product.nome}</p>
                         </div>
-
-                        <div className="mt-6 space-y-3">
-                            <Link href="/carrinho" className="block w-full text-center bg-purple-600 text-white py-2.5 rounded-md font-semibold hover:bg-purple-700 transition-colors">
-                                Ir para o carrinho
-                            </Link>
+                        <div className="flex items-center justify-center space-x-4 my-6">
+                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="h-10 w-10 border rounded-full text-lg font-bold text-purple-600 hover:bg-gray-100">-</button>
+                            <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
                             <button 
-                                onClick={() => setIsModalOpen(false)}
-                                className="w-full text-center border-2 border-gray-300 text-gray-700 py-2.5 rounded-md font-semibold hover:bg-gray-100 transition-colors"
+                                onClick={() => setQuantity(q => Math.min(availableStock, q + 1))} 
+                                className="h-10 w-10 border rounded-full text-lg font-bold text-purple-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={quantity >= availableStock}
                             >
-                                Continuar comprando
+                                +
                             </button>
                         </div>
+                        {availableStock > 0 && (
+                            <p className="text-sm text-gray-500 mb-4 -mt-2">
+                                (Apenas {availableStock} unidades disponíveis para adicionar)
+                            </p>
+                        )}
+                        <button
+                            onClick={handleConfirmAddToCart}
+                            className="w-full bg-purple-600 text-white py-2.5 rounded-md font-semibold hover:bg-purple-700 transition-colors"
+                        >
+                            Confirmar e Adicionar
+                        </button>
+                        <button
+                            onClick={() => setIsModalOpen(false)}
+                            className="w-full mt-2 text-sm text-gray-500 hover:text-black"
+                        >
+                            Cancelar
+                        </button>
                     </div>
                 </div>
             )}
@@ -162,17 +171,15 @@ export default function ProdutoPage({ product }) {
 }
 
 export async function getStaticPaths() {
-
     const produtos = await getApiData('/produtos');
-    const paths = produtos.map((prod) => ({
+    const paths = Array.isArray(produtos) ? produtos.map((prod) => ({
         params: { id: String(prod.id) },
-    }));
+    })) : [];
     return { paths, fallback: true };
 }
 
 export async function getStaticProps({ params }) {
     const id = params.id;
-
     const productData = await getApiData(`/produtos/${id}`);
 
     if (!productData) {

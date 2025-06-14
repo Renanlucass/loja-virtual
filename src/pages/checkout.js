@@ -19,6 +19,8 @@ export default function CheckoutPage() {
     const { cartItems, clearCart } = useCart();
     const router = useRouter();
     
+    const [deliveryMethod, setDeliveryMethod] = useState('entrega');
+
     const [formData, setFormData] = useState({
         nome: '',
         telefone: '',
@@ -45,12 +47,19 @@ export default function CheckoutPage() {
     const handleCepBlur = async (e) => {
         const cep = e.target.value.replace(/\D/g, '');
         if (cep.length !== 8) return;
+
         setIsCepLoading(true);
         try {
             const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
             const data = await response.json();
             if (!data.erro) {
-                setFormData(prev => ({ ...prev, rua: data.logradouro, bairro: data.bairro, cidade: data.localidade, estado: data.uf }));
+                setFormData(prev => ({
+                    ...prev,
+                    rua: data.logradouro,
+                    bairro: data.bairro,
+                    cidade: data.localidade,
+                    estado: data.uf,
+                }));
             }
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
@@ -72,7 +81,21 @@ export default function CheckoutPage() {
         const pedidoItens = cartItems.map(item => 
             `- ${item.quantity}x ${item.nome}: ${formatPrice(item.preco * item.quantity)}`
         ).join('\n');
-        
+
+        let entregaInfo = '';
+        if (deliveryMethod === 'entrega') {
+            entregaInfo = `
+*ENDEREÇO DE ENTREGA:*
+${formData.rua}, Nº ${formData.numero}
+${formData.bairro}, ${formData.cidade} - ${formData.estado}
+CEP: ${formData.cep}
+`;
+        } else {
+            entregaInfo = `*OPÇÃO DE ENTREGA:*
+Retirar no local (A combinar com o vendedor)
+`;
+        }
+
         const message = `
 *✨ NOVO PEDIDO - DEUSINHA ATELIÊ ✨*
 Pedido feito em: ${orderDate}
@@ -81,11 +104,7 @@ Pedido feito em: ${orderDate}
 Nome: ${formData.nome}
 Contato: ${formData.telefone}
 
-*ENDEREÇO DE ENTREGA:*
-${formData.rua}, Nº ${formData.numero}
-${formData.bairro}, ${formData.cidade} - ${formData.estado}
-CEP: ${formData.cep}
-
+${entregaInfo}
 -----------------------------------
 
 *ITENS DO PEDIDO:*
@@ -99,7 +118,7 @@ Pagamento: Online
 Forma de pagamento: ${formData.pagamento}
 ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
 
-*AGUARDANDO CONFIRMAÇÃO DO PAGAMENTO.*
+*AGUARDANDO CONFIRMAÇÃO E DADOS PARA PAGAMENTO.*
         `;
 
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message.trim())}`;
@@ -119,7 +138,7 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
         });
     };
 
-    const inputStyle = "mt-1 block w-full h-8 bg-gray-200 border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500";
+    const inputStyle = "mt-1 block w-full h-10 bg-gray-200 border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500";
 
     return (
         <>
@@ -149,36 +168,51 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
                     </div>
 
                     <div>
-                        <h2 className="text-xl font-semibold text-purple-700 mb-4">Endereço de Entrega</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="sm:col-span-1">
-                                <label htmlFor="cep" className="block text-sm font-medium text-gray-700">CEP *</label>
-                                <input type="text" name="cep" id="cep" required value={formData.cep} onChange={handleInputChange} onBlur={handleCepBlur} className={inputStyle}/>
-                                {isCepLoading && <p className="text-xs text-gray-500 mt-1">Buscando endereço...</p>}
-                            </div>
-                            <div className="sm:col-span-2">
-                                <label htmlFor="rua" className="block text-sm font-medium text-gray-700">Rua *</label>
-                                <input type="text" name="rua" id="rua" required value={formData.rua} onChange={handleInputChange} className={inputStyle}/>
-                            </div>
-                            <div className="sm:col-span-1">
-                                <label htmlFor="numero" className="block text-sm font-medium text-gray-700">Número *</label>
-                                <input type="text" name="numero" id="numero" required value={formData.numero} onChange={handleInputChange} className={inputStyle}/>
-                            </div>
-                            <div className="sm:col-span-2">
-                                <label htmlFor="bairro" className="block text-sm font-medium text-gray-700">Bairro *</label>
-                                <input type="text" name="bairro" id="bairro" required value={formData.bairro} onChange={handleInputChange} className={inputStyle}/>
-                            </div>
-                            <div className="sm:col-span-2">
-                                <label htmlFor="cidade" className="block text-sm font-medium text-gray-700">Cidade *</label>
-                                <input type="text" name="cidade" id="cidade" required value={formData.cidade} onChange={handleInputChange} className={inputStyle}/>
-                            </div>
-                            <div className="sm:col-span-1">
-                                <label htmlFor="estado" className="block text-sm font-medium text-gray-700">Estado *</label>
-                                <input type="text" name="estado" id="estado" required value={formData.estado} onChange={handleInputChange} className={inputStyle}/>
-                            </div>
+                        <h2 className="text-xl font-semibold text-purple-700 mb-4">Entrega</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${deliveryMethod === 'entrega' ? 'bg-purple-50 border-purple-500' : 'border-gray-200'}`}>
+                                <input type="radio" name="deliveryMethod" value="entrega" checked={deliveryMethod === 'entrega'} onChange={(e) => setDeliveryMethod(e.target.value)} className="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500"/>
+                                <span className="ml-3 text-sm font-medium text-gray-700">Receber em casa</span>
+                            </label>
+                            <label className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${deliveryMethod === 'retirada' ? 'bg-purple-50 border-purple-500' : 'border-gray-200'}`}>
+                                <input type="radio" name="deliveryMethod" value="retirada" checked={deliveryMethod === 'retirada'} onChange={(e) => setDeliveryMethod(e.target.value)} className="h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500"/>
+                                <span className="ml-3 text-sm font-medium text-gray-700">Retirar no local</span>
+                            </label>
                         </div>
                     </div>
 
+                    {deliveryMethod === 'entrega' && (
+                        <div>
+                            <h2 className="text-xl font-semibold text-purple-700 mb-4">Endereço de Entrega</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="sm:col-span-1">
+                                    <label htmlFor="cep" className="block text-sm font-medium text-gray-700">CEP *</label>
+                                    <input type="text" name="cep" id="cep" required={deliveryMethod === 'entrega'} value={formData.cep} onChange={handleInputChange} onBlur={handleCepBlur} className={inputStyle}/>
+                                    {isCepLoading && <p className="text-xs text-gray-500 mt-1">Buscando endereço...</p>}
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label htmlFor="rua" className="block text-sm font-medium text-gray-700">Rua *</label>
+                                    <input type="text" name="rua" id="rua" required={deliveryMethod === 'entrega'} value={formData.rua} onChange={handleInputChange} className={inputStyle}/>
+                                </div>
+                                <div className="sm:col-span-1">
+                                    <label htmlFor="numero" className="block text-sm font-medium text-gray-700">Número *</label>
+                                    <input type="text" name="numero" id="numero" required={deliveryMethod === 'entrega'} value={formData.numero} onChange={handleInputChange} className={inputStyle}/>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label htmlFor="bairro" className="block text-sm font-medium text-gray-700">Bairro *</label>
+                                    <input type="text" name="bairro" id="bairro" required={deliveryMethod === 'entrega'} value={formData.bairro} onChange={handleInputChange} className={inputStyle}/>
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label htmlFor="cidade" className="block text-sm font-medium text-gray-700">Cidade *</label>
+                                    <input type="text" name="cidade" id="cidade" required={deliveryMethod === 'entrega'} value={formData.cidade} onChange={handleInputChange} className={inputStyle}/>
+                                </div>
+                                <div className="sm:col-span-1">
+                                    <label htmlFor="estado" className="block text-sm font-medium text-gray-700">Estado *</label>
+                                    <input type="text" name="estado" id="estado" required={deliveryMethod === 'entrega'} value={formData.estado} onChange={handleInputChange} className={inputStyle}/>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     <div>
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Pagamento</h2>
@@ -204,10 +238,15 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
                            <p><span className="font-semibold">Data do Pedido:</span> {new Date().toLocaleString('pt-BR')}</p>
                            <p><strong>{formData.nome}</strong></p>
                            <p>Contato: <strong>{formData.telefone}</strong></p>
-                           <p className="mt-2"><strong>Para entregar:</strong></p>
-                           <p>{formData.rua}, {formData.numero}</p>
-                           <p>{formData.bairro}, {formData.cidade} - {formData.estado}</p>
-                           <p>{formData.cep}</p>
+                           {/* Informação de entrega dinâmica no modal */}
+                           <p className="mt-2"><strong>Opção de Entrega:</strong> {deliveryMethod === 'entrega' ? 'Receber em casa' : 'Retirar no local'}</p>
+                           {deliveryMethod === 'entrega' && (
+                               <>
+                                   <p>{formData.rua}, {formData.numero}</p>
+                                   <p>{formData.bairro}, {formData.cidade} - {formData.estado}</p>
+                                   <p>{formData.cep}</p>
+                               </>
+                           )}
                         </div>
                         
                         <div className="border-t my-4"></div>
