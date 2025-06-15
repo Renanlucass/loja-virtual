@@ -1,15 +1,15 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCart } from '../../context/CartContext'; 
+import { useCart } from '../../context/CartContext';
 import { useState } from 'react';
 
 const formatPrice = (price) => {
-  if (price === null || price === undefined) return '';
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(price);
+    if (price === null || price === undefined) return '';
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+    }).format(price);
 };
 
 async function getApiData(endpoint) {
@@ -17,7 +17,7 @@ async function getApiData(endpoint) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
         if (!response.ok) {
             console.error(`API Error for endpoint ${endpoint}: ${response.status} ${response.statusText}`);
-            return endpoint.includes('/produtos/') ? null : []; 
+            return endpoint.includes('/produtos/') ? null : [];
         }
         const data = await response.json();
         return data;
@@ -28,10 +28,11 @@ async function getApiData(endpoint) {
 }
 export default function ProdutoPage({ product }) {
     const router = useRouter();
-    const { addToCart, cartItems } = useCart(); 
-    
+    const { addToCart, cartItems } = useCart();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [quantity, setQuantity] = useState(1);
+    const [isZoomModalOpen, setIsZoomModalOpen] = useState(false);
 
     if (router.isFallback) {
         return <div className="text-center p-10">Carregando...</div>;
@@ -76,22 +77,27 @@ export default function ProdutoPage({ product }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                     <div>
-                        <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
-                            {imageUrl ? (
-                                <Image src={imageUrl} alt={product.nome} fill className="object-cover" priority />
-                            ) : (
-                                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <span className="text-gray-500">Sem Foto</span>
-                                </div>
-                            )}
-                        </div>
+                        {/* ---- INÍCIO DA ATUALIZAÇÃO ---- */}
+                        {/* A imagem agora é um botão que abre o modal de zoom */}
+                        <button onClick={() => setIsZoomModalOpen(true)} className="w-full cursor-zoom-in">
+                            <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
+                                {imageUrl ? (
+                                    <Image src={imageUrl} alt={product.nome} fill className="object-cover" priority />
+                                ) : (
+                                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                        <span className="text-gray-500">Sem Foto</span>
+                                    </div>
+                                )}
+                            </div>
+                        </button>
+                        {/* ---- FIM DA ATUALIZAÇÃO ---- */}
                     </div>
 
                     <div className="flex flex-col h-full">
                         <div className="flex-grow">
                             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">{product.nome}</h1>
                             <p className="text-3xl text-gray-800 mt-4">{formatPrice(product.preco)}</p>
-                            
+
                             {product.descricao && (
                                 <div className="mt-8 border-t pt-8">
                                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Descrição</h2>
@@ -101,9 +107,9 @@ export default function ProdutoPage({ product }) {
                                 </div>
                             )}
                         </div>
-                        
+
                         <div className="mt-8 space-y-4">
-                            <button 
+                            <button
                                 onClick={handleOpenModal}
                                 className="w-full bg-purple-600 text-white py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 disabled={availableStock <= 0}
@@ -138,8 +144,8 @@ export default function ProdutoPage({ product }) {
                         <div className="flex items-center justify-center space-x-4 my-6">
                             <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="h-10 w-10 border rounded-full text-lg font-bold text-purple-600 hover:bg-gray-100">-</button>
                             <span className="text-2xl font-bold w-12 text-center">{quantity}</span>
-                            <button 
-                                onClick={() => setQuantity(q => Math.min(availableStock, q + 1))} 
+                            <button
+                                onClick={() => setQuantity(q => Math.min(availableStock, q + 1))}
                                 className="h-10 w-10 border rounded-full text-lg font-bold text-purple-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled={quantity >= availableStock}
                             >
@@ -162,6 +168,31 @@ export default function ProdutoPage({ product }) {
                             className="w-full mt-2 text-sm text-gray-500 hover:text-black"
                         >
                             Cancelar
+                        </button>
+                    </div>
+                </div>
+            )}
+            {isZoomModalOpen && imageUrl && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 transition-opacity"
+                    onClick={() => setIsZoomModalOpen(false)}
+                >
+                    <div className="relative max-w-4xl max-h-[90vh] w-full p-4" onClick={(e) => e.stopPropagation()}>
+                        <Image
+                            src={imageUrl}
+                            alt={`Zoom da imagem de ${product.nome}`}
+                            width={1200}
+                            height={1200}
+                            className="object-contain w-full h-full"
+                        />
+                        <button
+                            onClick={() => setIsZoomModalOpen(false)}
+                            className="absolute top-2 right-2 m-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75"
+                            aria-label="Fechar zoom"
+                        >
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
                     </div>
                 </div>
