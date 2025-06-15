@@ -3,7 +3,6 @@ import { useRouter } from 'next/router';
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import Link from 'next/link';
-import api from '@/services/api'
 
 const formatPrice = (price) => {
   if (price === null || price === undefined) return '';
@@ -96,7 +95,7 @@ export default function CheckoutPage() {
             }
             
             const novoPedido = await response.json();
-            handleSendWhatsAppNotification(novoPedido.id);
+            handleSendWhatsAppNotification(novoPedido.id, formData.nome);
 
         } catch (error) {
             console.error("Erro ao finalizar pedido:", error);
@@ -106,15 +105,30 @@ export default function CheckoutPage() {
         }
     };
     
-    const handleSendWhatsAppNotification = (orderId) => {
-        const phoneNumber = '5589981016717';
-        const message = `Olá! Acabei de fazer o pedido *#${orderId}* no site da Deusinha Ateliê. Aguardo as instruções para o pagamento.`;
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    // ---- INÍCIO DA ATUALIZAÇÃO ----
+    const handleSendWhatsAppNotification = (orderId, customerName) => {
+        const phoneNumber = '5589981016717'; // Seu número de contato
+        const receiptUrl = `${window.location.origin}/pedido/${orderId}`; // O link para o recibo
+
+        // Mensagem mais personalizada
+        const message = `
+Olá, Deusinha Ateliê! 🛍️
+
+Meu nome é *${customerName}* e acabei de finalizar o pedido *#${orderId}*.
+
+Você pode ver todos os detalhes do meu pedido aqui:
+${receiptUrl}
+
+Fico no aguardo das próximas instruções para o pagamento. Obrigada! 😊
+        `;
+
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message.trim())}`;
         
         if (clearCart) clearCart();
         window.open(whatsappUrl, '_blank');
         router.push('/');
     };
+    // ---- FIM DA ATUALIZAÇÃO ----
     
     const handleCopyPix = () => {
         const pixKey = '89981016717';
@@ -124,7 +138,7 @@ export default function CheckoutPage() {
         });
     };
 
-    const inputStyle = "mt-1 block w-full bg-gray-100 border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base";
+    const inputStyle = "mt-1 block w-full h-10 bg-gray-100 border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base";
 
     return (
         <>
@@ -139,7 +153,6 @@ export default function CheckoutPage() {
                 <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Finalizar Pedido</h1>
                 
                 <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 sm:p-8 rounded-xl shadow-md">
-
                     <div>
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Suas Informações</h2>
                         <div className="space-y-4">
@@ -175,7 +188,6 @@ export default function CheckoutPage() {
                                 <div className="sm:col-span-1">
                                     <label htmlFor="cep" className="block text-sm font-medium text-gray-700">CEP *</label>
                                     <input type="text" name="cep" id="cep" required={deliveryMethod === 'entrega'} value={formData.cep} onChange={handleInputChange} onBlur={handleCepBlur} className={inputStyle}/>
-                                    {isCepLoading && <p className="text-xs text-gray-500 mt-1">Buscando endereço...</p>}
                                 </div>
                                 <div className="sm:col-span-2">
                                     <label htmlFor="rua" className="block text-sm font-medium text-gray-700">Rua *</label>
@@ -200,7 +212,7 @@ export default function CheckoutPage() {
                             </div>
                         </div>
                     )}
-
+                    
                     <div>
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Pagamento</h2>
                         <select name="pagamento" id="pagamento" value={formData.pagamento} onChange={handleInputChange} className={inputStyle}>
@@ -211,7 +223,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <button type="submit" className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition">
-                        Revisar e Enviar Pedido
+                        Revisar Pedido
                     </button>
                 </form>
             </main>
@@ -274,7 +286,7 @@ export default function CheckoutPage() {
                             )}
                         </div>
                         <button onClick={handleSendOrder} disabled={isSubmitting} className="w-full mt-6 bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition disabled:bg-gray-400">
-                            {isSubmitting ? 'Enviando...' : 'Confirmar e Enviar para WhatsApp'}
+                            {isSubmitting ? 'Enviando...' : 'Confirmar e Notificar via WhatsApp'}
                         </button>
                          <button onClick={() => setIsSummaryModalOpen(false)} className="w-full mt-2 text-sm text-gray-500 hover:text-black">Voltar e corrigir</button>
                     </div>
