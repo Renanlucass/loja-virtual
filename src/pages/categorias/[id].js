@@ -88,6 +88,6 @@ export async function getStaticProps({ params }) {
             categoria: categoriaData,
             produtos: produtosData,
         },
-        revalidate: 60,
+        revalidate: 10,
     };
 }

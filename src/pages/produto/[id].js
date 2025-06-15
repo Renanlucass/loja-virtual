@@ -77,8 +77,7 @@ export default function ProdutoPage({ product }) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                     <div>
-                        {/* ---- INÍCIO DA ATUALIZAÇÃO ---- */}
-                        {/* A imagem agora é um botão que abre o modal de zoom */}
+
                         <button onClick={() => setIsZoomModalOpen(true)} className="w-full cursor-zoom-in">
                             <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
                                 {imageUrl ? (
@@ -90,7 +89,6 @@ export default function ProdutoPage({ product }) {
                                 )}
                             </div>
                         </button>
-                        {/* ---- FIM DA ATUALIZAÇÃO ---- */}
                     </div>
 
                     <div className="flex flex-col h-full">
@@ -221,6 +219,6 @@ export async function getStaticProps({ params }) {
         props: {
             product: productData,
         },
-        revalidate: 60,
+        revalidate: 10,
     };
 }

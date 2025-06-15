@@ -49,6 +49,6 @@ export async function getStaticProps() {
       categorias,
       produtosDestaque,
     },
-    revalidate: 60,
+    revalidate: 10,
   };
 }
