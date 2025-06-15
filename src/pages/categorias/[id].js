@@ -57,7 +57,7 @@ export default function CategoriaPage({ categoria, produtos }) {
 }
 
 export async function getStaticPaths() {
-    const categorias = await getApiData('/api/categorias');
+    const categorias = await getApiData('/categorias');
     
     const paths = categorias.map((cat) => ({
         params: { id: String(cat.id) },
@@ -74,7 +74,7 @@ export async function getStaticProps({ params }) {
 
     const [categoriaData, produtosData] = await Promise.all([
         getApiData(`/categorias/${id}`),
-        getApiData(`/categorias/${id}/produtos`)
+        getApiData(`/categorias/${id}/produtos?incluir_arquivados=false`)
     ]);
 
     if (!categoriaData) {
