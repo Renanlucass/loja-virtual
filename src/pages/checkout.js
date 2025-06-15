@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useCart } from '../context/CartContext';
 import Image from 'next/image';
 import Link from 'next/link';
+import api from '@/services/api'
 
 const formatPrice = (price) => {
   if (price === null || price === undefined) return '';
@@ -20,7 +21,6 @@ export default function CheckoutPage() {
     const router = useRouter();
     
     const [deliveryMethod, setDeliveryMethod] = useState('entrega');
-
     const [formData, setFormData] = useState({
         nome: '',
         telefone: '',
@@ -36,8 +36,9 @@ export default function CheckoutPage() {
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [isCepLoading, setIsCepLoading] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const subtotal = cartItems.reduce((total, item) => total + item.preco * item.quantity, 0);
+    const subtotal = cartItems.reduce((total, item) => total + parseFloat(item.preco) * item.quantity, 0);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -47,19 +48,12 @@ export default function CheckoutPage() {
     const handleCepBlur = async (e) => {
         const cep = e.target.value.replace(/\D/g, '');
         if (cep.length !== 8) return;
-
         setIsCepLoading(true);
         try {
             const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
             const data = await response.json();
             if (!data.erro) {
-                setFormData(prev => ({
-                    ...prev,
-                    rua: data.logradouro,
-                    bairro: data.bairro,
-                    cidade: data.localidade,
-                    estado: data.uf,
-                }));
+                setFormData(prev => ({ ...prev, rua: data.logradouro, bairro: data.bairro, cidade: data.localidade, estado: data.uf }));
             }
         } catch (error) {
             console.error("Erro ao buscar CEP:", error);
@@ -73,55 +67,49 @@ export default function CheckoutPage() {
         setIsSummaryModalOpen(true);
     };
 
-    const handleSendWhatsApp = () => {
-        const phoneNumber = '5589981016717';
-        const pixKey = '89981016717';
-        const orderDate = new Date().toLocaleString('pt-BR');
+    const handleSendOrder = async () => {
+        setIsSubmitting(true);
+        try {
+            let enderecoCompleto = 'Retirar no local (a combinar com o vendedor)';
+            if (deliveryMethod === 'entrega') {
+                enderecoCompleto = `${formData.rua}, Nº ${formData.numero}, ${formData.bairro}, ${formData.cidade} - ${formData.estado}, CEP: ${formData.cep}`;
+            }
 
-        const pedidoItens = cartItems.map(item => 
-            `- ${item.quantity}x ${item.nome}: ${formatPrice(item.preco * item.quantity)}`
-        ).join('\n');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pedidos`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nome_cliente: formData.nome,
+                    telefone_cliente: formData.telefone,
+                    endereco_completo: enderecoCompleto,
+                    metodo_entrega: deliveryMethod,
+                    forma_pagamento: formData.pagamento,
+                    itens_pedido: cartItems,
+                    subtotal: subtotal
+                })
+            });
 
-        let entregaInfo = '';
-        if (deliveryMethod === 'entrega') {
-            entregaInfo = `
-*ENDEREÇO DE ENTREGA:*
-${formData.rua}, Nº ${formData.numero}
-${formData.bairro}, ${formData.cidade} - ${formData.estado}
-CEP: ${formData.cep}
-`;
-        } else {
-            entregaInfo = `*OPÇÃO DE ENTREGA:*
-Retirar no local (A combinar com o vendedor)
-`;
+            if (!response.ok) {
+                throw new Error('Falha ao criar o pedido na API.');
+            }
+            
+            const novoPedido = await response.json();
+            handleSendWhatsAppNotification(novoPedido.id);
+
+        } catch (error) {
+            console.error("Erro ao finalizar pedido:", error);
+            alert("Não foi possível finalizar o seu pedido. Tente novamente.");
+        } finally {
+            setIsSubmitting(false);
         }
-
-        const message = `
-*✨ NOVO PEDIDO - DEUSINHA ATELIÊ ✨*
-Pedido feito em: ${orderDate}
-
-*DADOS DO CLIENTE:*
-Nome: ${formData.nome}
-Contato: ${formData.telefone}
-
-${entregaInfo}
------------------------------------
-
-*ITENS DO PEDIDO:*
-${pedidoItens}
-
------------------------------------
-
-*RESUMO:*
-Subtotal: ${formatPrice(subtotal)}
-Pagamento: Online
-Forma de pagamento: ${formData.pagamento}
-${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
-
-*AGUARDANDO CONFIRMAÇÃO E DADOS PARA PAGAMENTO.*
-        `;
-
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message.trim())}`;
+    };
+    
+    const handleSendWhatsAppNotification = (orderId) => {
+        const phoneNumber = '5589981016717';
+        const message = `Olá! Acabei de fazer o pedido *#${orderId}* no site da Deusinha Ateliê. Aguardo as instruções para o pagamento.`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
         
         if (clearCart) clearCart();
         window.open(whatsappUrl, '_blank');
@@ -133,12 +121,10 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
         navigator.clipboard.writeText(pixKey).then(() => {
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 2000);
-        }, (err) => {
-            console.error('Falha ao copiar: ', err);
         });
     };
 
-    const inputStyle = "mt-1 block w-full h-10 bg-gray-200 border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500";
+    const inputStyle = "mt-1 block w-full bg-gray-100 border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 p-3 text-base";
 
     return (
         <>
@@ -153,6 +139,7 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
                 <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">Finalizar Pedido</h1>
                 
                 <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 sm:p-8 rounded-xl shadow-md">
+
                     <div>
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Suas Informações</h2>
                         <div className="space-y-4">
@@ -166,7 +153,7 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
                             </div>
                         </div>
                     </div>
-
+                    
                     <div>
                         <h2 className="text-xl font-semibold text-purple-700 mb-4">Entrega</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -232,13 +219,12 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
             {isSummaryModalOpen && (
                 <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-gray-900/20 backdrop-blur-sm">
                     <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md text-sm">
-                        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Agora é só enviar seu pedido via WhatsApp</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">Confirme seu pedido</h2>
                         
                         <div className="space-y-1 text-gray-700 text-left">
                            <p><span className="font-semibold">Data do Pedido:</span> {new Date().toLocaleString('pt-BR')}</p>
                            <p><strong>{formData.nome}</strong></p>
                            <p>Contato: <strong>{formData.telefone}</strong></p>
-                           {/* Informação de entrega dinâmica no modal */}
                            <p className="mt-2"><strong>Opção de Entrega:</strong> {deliveryMethod === 'entrega' ? 'Receber em casa' : 'Retirar no local'}</p>
                            {deliveryMethod === 'entrega' && (
                                <>
@@ -287,8 +273,8 @@ ${formData.pagamento === 'PIX' ? `CHAVE PIX: ${pixKey}` : ''}
                                 </div>
                             )}
                         </div>
-                        <button onClick={handleSendWhatsApp} className="w-full mt-6 bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition">
-                            Enviar Pedido via WhatsApp
+                        <button onClick={handleSendOrder} disabled={isSubmitting} className="w-full mt-6 bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition disabled:bg-gray-400">
+                            {isSubmitting ? 'Enviando...' : 'Confirmar e Enviar para WhatsApp'}
                         </button>
                          <button onClick={() => setIsSummaryModalOpen(false)} className="w-full mt-2 text-sm text-gray-500 hover:text-black">Voltar e corrigir</button>
                     </div>
