@@ -202,15 +202,7 @@ export default function ProdutoPage({ product }) {
     );
 }
 
-export async function getStaticPaths() {
-    const produtos = await getApiData('/produtos');
-    const paths = Array.isArray(produtos) ? produtos.map((prod) => ({
-        params: { id: String(prod.id) },
-    })) : [];
-    return { paths, fallback: true };
-}
-
-export async function getStaticProps({ params }) {
+export async function getServerSideProps({ params }) {
     const id = params.id;
     const productData = await getApiData(`/produtos/${id}`);
 
@@ -222,6 +214,5 @@ export async function getStaticProps({ params }) {
         props: {
             product: productData,
         },
-        revalidate: 10,
     };
 }
