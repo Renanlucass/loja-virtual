@@ -42,8 +42,7 @@ export default function HomePage({ categorias, produtosDestaque }) {
   );
 }
 
-export async function getStaticProps() {
-
+export async function getServerSideProps() {
   const [categorias, produtosDestaque] = await Promise.all([
     getApiData('/categorias'),
     getApiData('/produtos?destaque=true')
@@ -53,7 +52,6 @@ export async function getStaticProps() {
     props: {
       categorias,
       produtosDestaque,
-    },
-    revalidate: 10,
+    }
   };
 }
