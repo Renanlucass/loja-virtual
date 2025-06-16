@@ -3,12 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      // Novo padrão para a sua API online no Render
       {
         protocol: 'https',
-        // IMPORTANTE: Substitua pelo hostname da sua URL do Render
         hostname: 'loja-backend-rxwb.onrender.com', 
-        port: '', // Deixe a porta vazia para o padrão HTTPS (443)
+        port: '',
         pathname: '/assets/**',
       },
 
@@ -16,14 +14,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
         port: '',
-        pathname: '/**', // Permite qualquer caminho vindo deste hostname
+        pathname: '/**',
       },
 
     ],
   },
 };
 
-// ---- INÍCIO DA CORREÇÃO ----
-// Alterado de module.exports para export default para ser compatível com ES Modules (.mjs)
 module.exports = nextConfig;
-// ---- FIM DA CORREÇÃO ----
