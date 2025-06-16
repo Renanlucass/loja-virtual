@@ -7,7 +7,7 @@ const nextConfig = {
       {
         protocol: 'https',
         // IMPORTANTE: Substitua pelo hostname da sua URL do Render
-        hostname: 'https://loja-backend-rxwb.onrender.com', 
+        hostname: 'loja-backend-rxwb.onrender.com', 
         port: '', // Deixe a porta vazia para o padrão HTTPS (443)
         pathname: '/assets/**',
       },

@@ -5,11 +5,8 @@ import SearchBar from '@/components/searchBar';
 async function getApiData(endpoint) {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-    const data = await response.json();
-    return data;
+    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+    return await response.json();
   } catch (error) {
     console.error(error.message);
     return [];
@@ -17,7 +14,6 @@ async function getApiData(endpoint) {
 }
 
 export default function HomePage({ categorias, produtosDestaque }) {
-
   return (
     <main className="container mx-auto px-4 py-4">
       <div className="w-full flex mb-4 justify-center">
@@ -30,13 +26,15 @@ export default function HomePage({ categorias, produtosDestaque }) {
 
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Produtos em Destaque</h2>
-        {produtosDestaque && produtosDestaque.length > 0 ? (
+        {produtosDestaque?.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {produtosDestaque.map((prod) => (
               <ProductCard key={prod.id} product={prod} />
             ))}
           </div>
-        ) : <p>Nenhum produto em destaque no momento.</p>}
+        ) : (
+          <p>Nenhum produto em destaque no momento.</p>
+        )}
       </section>
     </main>
   );
