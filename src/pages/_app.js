@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import Layout from '../components/Layout';
 import { CartProvider } from "@/context/CartContext";
 import Head from 'next/head';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export default function App({ Component, pageProps }) {
   return (
@@ -12,6 +13,7 @@ export default function App({ Component, pageProps }) {
       <Layout>
         <Component {...pageProps} />
       </Layout>
+      <SpeedInsights/>
     </CartProvider>
   );
 }
