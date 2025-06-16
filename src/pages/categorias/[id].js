@@ -13,19 +13,15 @@ async function getApiData(endpoint) {
         return data;
     } catch (error) {
         console.error(error.message);
-        return [];
+        return null;
     }
 }
 
 export default function CategoriaPage({ categoria, produtos }) {
     const router = useRouter();
 
-    if (router.isFallback) {
-        return <div className="text-center p-10">Carregando...</div>;
-    }
-
     if (!categoria) {
-        return <p>Categoria não encontrada.</p>;
+        return <p className="text-center p-10">Categoria não encontrada.</p>;
     }
 
     return (
@@ -40,7 +36,9 @@ export default function CategoriaPage({ categoria, produtos }) {
                     href="/"
                     className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
                     <span>Voltar para todas as categorias</span>
                 </Link>
             </div>
@@ -62,21 +60,8 @@ export default function CategoriaPage({ categoria, produtos }) {
     );
 }
 
-export async function getStaticPaths() {
-    const categorias = await getApiData('/categorias');
-
-    const paths = categorias.map((cat) => ({
-        params: { id: String(cat.id) },
-    }));
-
-    return {
-        paths,
-        fallback: 'blocking',
-    };
-}
-
-export async function getStaticProps({ params }) {
-    const id = params.id;
+export async function getServerSideProps(context) {
+    const { id } = context.params;
 
     const [categoriaData, produtosData] = await Promise.all([
         getApiData(`/categorias/${id}`),
@@ -92,8 +77,7 @@ export async function getStaticProps({ params }) {
     return {
         props: {
             categoria: categoriaData,
-            produtos: produtosData,
+            produtos: produtosData || [],
         },
-        revalidate: 10,
     };
 }

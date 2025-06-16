@@ -20,10 +20,6 @@ async function getApiData(endpoint) {
 export default function PedidoConfirmadoPage({ pedido }) {
     const router = useRouter();
 
-    if (router.isFallback) {
-        return <div className="text-center p-10">A carregar os detalhes do seu pedido...</div>;
-    }
-
     if (!pedido) {
         return <div className="text-center p-10">Pedido não encontrado.</div>;
     }
@@ -76,25 +72,18 @@ export default function PedidoConfirmadoPage({ pedido }) {
     );
 }
 
-export async function getStaticPaths() {
-    const pedidos = await getApiData('/pedidos');
-    const paths = Array.isArray(pedidos) ? pedidos.map((p) => ({
-        params: { id: String(p.id) },
-    })) : [];
-    return { paths, fallback: true };
-}
+export async function getServerSideProps(context) {
+    const { id } = context.params;
 
-export async function getStaticProps({ params }) {
-    const pedido = await getApiData(`/pedidos/${params.id}`);
-    
+    const pedido = await getApiData(`/pedidos/${id}`);
+
     if (!pedido) {
-        return { notFound: true };
+        return {
+            notFound: true,
+        };
     }
 
     return {
-        props: {
-            pedido,
-        },
-        revalidate: 600, 
+        props: { pedido },
     };
 }
