@@ -68,12 +68,15 @@ export default function ProdutoPage({ product }) {
     return (
         <>
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="mb-8">
-                    <button onClick={() => router.back()} className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 hover:text-purple-800 transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                        <span>Voltar</span>
-                    </button>
-                </div>
+            <div className="mb-8">
+                <Link
+                    href="/"
+                    className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span>Voltar para os produtos</span>
+                </Link>
+            </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
                     <div>

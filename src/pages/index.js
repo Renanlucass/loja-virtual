@@ -1,26 +1,31 @@
 import CategoryCarousel from '../components/CategoryCarousel';
 import ProductCard from '../components/ProductCard';
-
+import SearchBar from '@/components/searchBar';
 
 async function getApiData(endpoint) {
-    try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.statusText}`);
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error(error.message);
-        return [];
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.statusText}`);
     }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error.message);
+    return [];
+  }
 }
 
 export default function HomePage({ categorias, produtosDestaque }) {
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      
+    <main className="container mx-auto px-4 py-4">
+      <div className="w-full flex mb-4 justify-center">
+        <div className="w-full flex justify-center max-w-lg">
+          <SearchBar />
+        </div>
+      </div>
+
       <CategoryCarousel categorias={categorias} />
 
       <section className="mt-12">
@@ -38,7 +43,7 @@ export default function HomePage({ categorias, produtosDestaque }) {
 }
 
 export async function getStaticProps() {
-  
+
   const [categorias, produtosDestaque] = await Promise.all([
     getApiData('/categorias'),
     getApiData('/produtos?destaque=true')

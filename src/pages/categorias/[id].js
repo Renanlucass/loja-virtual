@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import ProductCard from '../../components/ProductCard';
 import { useRouter } from 'next/router';
+import SearchBar from '@/components/searchBar';
 
 async function getApiData(endpoint) {
     try {
@@ -22,23 +23,28 @@ export default function CategoriaPage({ categoria, produtos }) {
     if (router.isFallback) {
         return <div className="text-center p-10">Carregando...</div>;
     }
-    
+
     if (!categoria) {
         return <p>Categoria não encontrada.</p>;
     }
 
     return (
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-4">
+            <div className="w-full flex mb-4 justify-center">
+                <div className="w-full flex justify-center max-w-lg">
+                    <SearchBar />
+                </div>
+            </div>
             <div className="mb-8">
-                <Link 
-                    href="/" 
+                <Link
+                    href="/"
                     className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     <span>Voltar para todas as categorias</span>
                 </Link>
             </div>
-            
+
             <h2 className="text-4xl font-bold mb-8 text-gray-800">
                 {categoria.nome}
             </h2>
@@ -58,7 +64,7 @@ export default function CategoriaPage({ categoria, produtos }) {
 
 export async function getStaticPaths() {
     const categorias = await getApiData('/categorias');
-    
+
     const paths = categorias.map((cat) => ({
         params: { id: String(cat.id) },
     }));

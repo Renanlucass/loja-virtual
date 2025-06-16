@@ -63,11 +63,11 @@ export default function Header() {
                       )}
                     </Link>
                 </div>
-                <div className="w-full flex justify-center">
+                {/* <div className="w-full flex justify-center">
                     <div className="w-full flex justify-center max-w-lg">
                         <SearchBar />
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     </header>

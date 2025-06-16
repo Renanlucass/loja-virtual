@@ -23,7 +23,6 @@ export function CartProvider({ children }) {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.id === product.id);
       if (existingItem) {
-
         return prevItems.map(item => 
           item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
@@ -48,11 +47,17 @@ export function CartProvider({ children }) {
     }
   };
 
+  // Função para limpar o carrinho
+  const clearCart = () => {
+    setCartItems([]);
+  };
+
   const value = {
     cartItems,
     addToCart,
     removeFromCart,
     updateQuantity,
+    clearCart, // não esqueça de exportar aqui
   };
 
   return (

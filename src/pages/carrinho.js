@@ -24,12 +24,15 @@ export default function CarrinhoPage() {
 
     return (
         <main className="container mx-auto px-4 py-10">
-            <button onClick={() => router.back()} className="inline-flex items-center text-purple-600 font-semibold mb-6 hover:underline">
-                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Voltar
-            </button>
+            <div className="mb-8">
+                <Link
+                    href="/"
+                    className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
+                >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span>Voltar para os produtos</span>
+                </Link>
+            </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6 sm:mb-10 text-center">Seu Carrinho</h1>
 
