@@ -1,28 +1,28 @@
 import CategoryCarousel from '../components/CategoryCarousel';
 import ProductCard from '../components/ProductCard';
-import SearchBar from '@/components/searchBar';
+import ImageSlider from '@/components/Slider';
 
 async function getApiData(endpoint) {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`);
-    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+    if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`API Error: ${response.statusText}`);
+    }
     return await response.json();
   } catch (error) {
     console.error(error.message);
-    return [];
+    return null; 
   }
 }
 
-export default function HomePage({ categorias, produtosDestaque }) {
+export default function HomePage({ categorias, produtosDestaque, sliderImages }) {
   return (
-    <main className="container mx-auto px-4 py-4">
-      <div className="w-full flex mb-4 justify-center">
-        <div className="w-full flex justify-center max-w-lg">
-          <SearchBar />
-        </div>
-      </div>
-
+    <main className="container mx-auto px-4 py-8">
+      
       <CategoryCarousel categorias={categorias} />
+
+      <ImageSlider images={sliderImages} />
 
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Produtos em Destaque</h2>
@@ -41,15 +41,26 @@ export default function HomePage({ categorias, produtosDestaque }) {
 }
 
 export async function getServerSideProps() {
-  const [categorias, produtosDestaque] = await Promise.all([
+  const [categorias, produtosDestaque, bannerImage, otherSliderImages] = await Promise.all([
     getApiData('/categorias'),
-    getApiData('/produtos?destaque=true')
+    getApiData('/produtos?destaque=true'),
+    getApiData('/slider/banner'), 
+    getApiData('/slider')   
   ]);
+
+  const sliderImages = [];
+  if (bannerImage) {
+    sliderImages.push(bannerImage); 
+  }
+  if (otherSliderImages && otherSliderImages.length > 0) {
+    sliderImages.push(...otherSliderImages);
+  }
 
   return {
     props: {
-      categorias,
-      produtosDestaque,
+      categorias: categorias || [],
+      produtosDestaque: produtosDestaque || [],
+      sliderImages,
     }
   };
 }
