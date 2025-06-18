@@ -1,6 +1,7 @@
 import CategoryCarousel from '../components/CategoryCarousel';
 import ProductCard from '../components/ProductCard';
 import ImageSlider from '@/components/Slider';
+import SearchBar from '@/components/searchBar';
 
 async function getApiData(endpoint) {
   try {
@@ -19,6 +20,7 @@ async function getApiData(endpoint) {
 export default function HomePage({ categorias, produtosDestaque, sliderImages }) {
   return (
     <main className="container mx-auto px-4 py-8">
+      <SearchBar/>
       
       <CategoryCarousel categorias={categorias} />
 
