@@ -47,7 +47,7 @@ export default function ProductCard({ product }) {
                   alt={product.nome || 'Produto sem nome'}
                   fill
                   sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  className="object-cover"
+                  className="object-scale-down"
                 />
               ) : (
                 <div className="w-full h-full bg-gray-100 flex items-center justify-center">
