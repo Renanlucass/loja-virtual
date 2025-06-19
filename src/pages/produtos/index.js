@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import ProductCard from '@/components/ProductCard';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 async function getApiData(endpoint) {
     try {
@@ -24,6 +24,7 @@ export default function ProdutosPage({ initialProducts, initialTotalCount, initi
     const [currentPage, setCurrentPage] = useState(initialCurrentPage || 1);
     const [searchQuery, setSearchQuery] = useState(initialSearch || '');
 
+    const isInitialMount = useRef(true);
     const totalPages = Math.ceil(totalCount / 12);
 
     useEffect(() => {
@@ -32,6 +33,11 @@ export default function ProdutosPage({ initialProducts, initialTotalCount, initi
     }, [router.query.search, router.query.page]);
 
     useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
         async function fetchProdutos() {
             if (!searchQuery.trim()) {
                 setProdutos([]);
