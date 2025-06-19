@@ -1,7 +1,7 @@
 import CategoryCarousel from '../components/CategoryCarousel';
 import ProductCard from '../components/ProductCard';
 import ImageSlider from '@/components/Slider';
-import SearchBar from '@/components/searchBar';
+import Image from 'next/image';
 
 async function getApiData(endpoint) {
   try {
@@ -13,15 +13,32 @@ async function getApiData(endpoint) {
     return await response.json();
   } catch (error) {
     console.error(error.message);
-    return null; 
+    return null;
   }
 }
 
-export default function HomePage({ categorias, produtosDestaque, sliderImages }) {
+export default function HomePage({ categorias, produtosDestaque, bannerImage, sliderImages }) {
   return (
     <main className="container mx-auto px-4 py-8">
-      <SearchBar/>
-      
+
+      {bannerImage && (
+        <section className="mb-12">
+            <div className="relative w-full h-48 sm:h-64 md:h-80 rounded-2xl shadow-lg overflow-hidden">
+                <Image
+                    src={bannerImage.imagem_url}
+                    alt={bannerImage.titulo || 'Banner de divulgação'}
+                    fill
+                    className="object-cover"
+                    priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex flex-col justify-end p-6 sm:p-8">
+                    <h2 className="text-white text-2xl sm:text-3xl font-bold drop-shadow-lg">{bannerImage.titulo}</h2>
+                    <p className="text-white text-sm sm:text-base mt-1 drop-shadow-lg">{bannerImage.descricao}</p>
+                </div>
+            </div>
+        </section>
+      )}
+
       <CategoryCarousel categorias={categorias} />
 
       <ImageSlider images={sliderImages} />
@@ -43,26 +60,19 @@ export default function HomePage({ categorias, produtosDestaque, sliderImages })
 }
 
 export async function getServerSideProps() {
-  const [categorias, produtosDestaque, bannerImage, otherSliderImages] = await Promise.all([
+  const [categorias, produtosDestaque, bannerImage, sliderImages] = await Promise.all([
     getApiData('/categorias'),
     getApiData('/produtos?destaque=true'),
-    getApiData('/slider/banner'), 
-    getApiData('/slider')   
+    getApiData('/slider/banner'),
+    getApiData('/slider') 
   ]);
-
-  const sliderImages = [];
-  if (bannerImage) {
-    sliderImages.push(bannerImage); 
-  }
-  if (otherSliderImages && otherSliderImages.length > 0) {
-    sliderImages.push(...otherSliderImages);
-  }
 
   return {
     props: {
       categorias: categorias || [],
       produtosDestaque: produtosDestaque || [],
-      sliderImages,
+      bannerImage: bannerImage || null,
+      sliderImages: sliderImages || [],
     }
   };
 }

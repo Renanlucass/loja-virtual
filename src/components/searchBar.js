@@ -20,7 +20,7 @@ function SearchIcon() {
 
 export default function SearchBar() {
   return (
-    <div className="relative w-full flex justify-center justify-self-center mb-4 max-w-xs rounded-full bg-pink-50">
+    <div className="relative w-full flex justify-center justify-self-center max-w-xs rounded-full bg-pink-50">
       <input
         type="text"
         placeholder="Faça sua busca..."
