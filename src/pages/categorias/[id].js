@@ -26,11 +26,6 @@ export default function CategoriaPage({ categoria, produtos }) {
 
     return (
         <main className="container mx-auto px-4 py-4">
-            <div className="w-full flex mb-4 justify-center">
-                <div className="w-full flex justify-center max-w-lg">
-                    <SearchBar />
-                </div>
-            </div>
             <div className="mb-8">
                 <Link
                     href="/"
