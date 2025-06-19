@@ -16,7 +16,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
-
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '4000', // ou a porta que sua API estiver usando localmente
+        pathname: '/assets/**',
+      },
     ],
   },
 };

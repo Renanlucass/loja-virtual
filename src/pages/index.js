@@ -18,7 +18,7 @@ async function getApiData(endpoint) {
   }
 }
 
-export default function HomePage({ categorias, produtosDestaque, totalCount, currentPage, bannerImage, sliderImages }) {
+export default function HomePage({ categorias, produtosDestaque, totalCount, currentPage, bannerImage, sliderImages, searchQuery }) {
   const totalPages = Math.ceil(totalCount / 12);
 
   return (
@@ -60,7 +60,7 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
               <div className="flex justify-center mt-10 flex-wrap items-center gap-2">
 
                 <Link
-                  href={`/?page=${currentPage - 1}`}
+                  href={`/?page=${currentPage - 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
                   className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === 1
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -74,7 +74,7 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Link
                     key={page}
-                    href={`/?page=${page}`}
+                    href={`/?page=${page}&search=${encodeURIComponent(searchQuery)}`}
                     scroll={false}
                     className={`px-4 py-2 border rounded-md text-sm font-medium ${page === currentPage
                         ? 'bg-purple-600 text-white'
@@ -84,8 +84,9 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
                     {page}
                   </Link>
                 ))}
+
                 <Link
-                  href={`/?page=${currentPage + 1}`}
+                  href={`/?page=${currentPage + 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
                   className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === totalPages
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
@@ -108,10 +109,11 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
 
 export async function getServerSideProps(context) {
   const page = parseInt(context.query.page) || 1;
+  const search = context.query.search || '';
 
   const [categorias, produtosDestaqueData, bannerImage, sliderImages] = await Promise.all([
     getApiData('/categorias'),
-    getApiData(`/produtos?destaque=true&page=${page}&limit=12`),
+    getApiData(`/produtos?destaque=true&page=${page}&limit=12&search=${encodeURIComponent(search)}`),
     getApiData('/slider/banner'),
     getApiData('/slider'),
   ]);
@@ -124,6 +126,7 @@ export async function getServerSideProps(context) {
       currentPage: produtosDestaqueData?.currentPage || 1,
       bannerImage: bannerImage || null,
       sliderImages: sliderImages || [],
+      searchQuery: search,
     },
   };
 }

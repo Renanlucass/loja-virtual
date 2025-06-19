@@ -41,7 +41,7 @@ export default function ImageSlider({ images }) {
     }
 
     return (
-        <div className="w-full max-w-5xl mx-auto my-12">
+        <div className="w-full max-w-5xl mx-auto my-6">
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Peças que Nascem no Meu Ateliê</h2>
 
             <section className="relative w-full h-80 sm:h-72 md:h-96 rounded-2xl shadow-lg">
