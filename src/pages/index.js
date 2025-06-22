@@ -3,6 +3,8 @@ import ProductCard from '../components/ProductCard';
 import ImageSlider from '@/components/Slider';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 async function getApiData(endpoint) {
   try {
@@ -18,8 +20,42 @@ async function getApiData(endpoint) {
   }
 }
 
-export default function HomePage({ categorias, produtosDestaque, totalCount, currentPage, bannerImage, sliderImages, searchQuery }) {
-  const totalPages = Math.ceil(totalCount / 12);
+export default function HomePage({
+  categorias,
+  bannerImage,
+  sliderImages,
+  produtosDestaque,
+  totalCount,
+}) {
+  const router = useRouter();
+
+  const [produtos, setProdutos] = useState(produtosDestaque);
+  const [totalCountState, setTotalCount] = useState(totalCount);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const totalPages = Math.ceil(totalCountState / 12);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const page = parseInt(router.query.page) || 1;
+    const search = router.query.search || '';
+
+    if (page === currentPage && search === searchQuery) return;
+
+    setCurrentPage(page);
+    setSearchQuery(search);
+    setIsLoading(true);
+
+    getApiData(`/produtos?destaque=true&page=${page}&limit=12&search=${encodeURIComponent(search)}`)
+      .then((data) => {
+        setProdutos(data?.products || []);
+        setTotalCount(data?.totalCount || 0);
+      })
+      .finally(() => setIsLoading(false));
+  }, [router.isReady, router.query.page, router.query.search]);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -42,30 +78,35 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
       )}
 
       <CategoryCarousel categorias={categorias} />
-
       <ImageSlider images={sliderImages} />
 
       <section className="mt-12">
         <h2 className="text-2xl font-semibold mb-4 text-gray-800">Produtos em Destaque</h2>
 
-        {produtosDestaque?.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : produtos.length > 0 ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {produtosDestaque.map((prod) => (
+              {produtos.map((prod) => (
                 <ProductCard key={prod.id} product={prod} />
               ))}
             </div>
 
             {totalPages > 1 && (
               <div className="flex justify-center mt-10 flex-wrap items-center gap-2">
-
                 <Link
                   href={`/?page=${currentPage - 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === 1
+                  className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                    currentPage === 1
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                    }`}
+                  }`}
                   aria-disabled={currentPage === 1}
                 >
                   Anterior
@@ -76,10 +117,11 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
                     key={page}
                     href={`/?page=${page}&search=${encodeURIComponent(searchQuery)}`}
                     scroll={false}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium ${page === currentPage
+                    className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                      page === currentPage
                         ? 'bg-purple-600 text-white'
                         : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                      }`}
+                    }`}
                   >
                     {page}
                   </Link>
@@ -88,10 +130,11 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
                 <Link
                   href={`/?page=${currentPage + 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === totalPages
+                  className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                    currentPage === totalPages
                       ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                    }`}
+                  }`}
                   aria-disabled={currentPage === totalPages}
                 >
                   Próximo
@@ -100,20 +143,17 @@ export default function HomePage({ categorias, produtosDestaque, totalCount, cur
             )}
           </>
         ) : (
-          <p>Nenhum produto em destaque no momento.</p>
+          <p className="text-center text-gray-600 mt-20">Nenhum produto em destaque no momento.</p>
         )}
       </section>
     </main>
   );
 }
 
-export async function getServerSideProps(context) {
-  const page = parseInt(context.query.page) || 1;
-  const search = context.query.search || '';
-
+export async function getStaticProps() {
   const [categorias, produtosDestaqueData, bannerImage, sliderImages] = await Promise.all([
     getApiData('/categorias'),
-    getApiData(`/produtos?destaque=true&page=${page}&limit=12&search=${encodeURIComponent(search)}`),
+    getApiData(`/produtos?destaque=true&page=1&limit=12`),
     getApiData('/slider/banner'),
     getApiData('/slider'),
   ]);
@@ -123,10 +163,9 @@ export async function getServerSideProps(context) {
       categorias: categorias || [],
       produtosDestaque: produtosDestaqueData?.products || [],
       totalCount: produtosDestaqueData?.totalCount || 0,
-      currentPage: produtosDestaqueData?.currentPage || 1,
       bannerImage: bannerImage || null,
       sliderImages: sliderImages || [],
-      searchQuery: search,
     },
+    revalidate: 3600, 
   };
 }
