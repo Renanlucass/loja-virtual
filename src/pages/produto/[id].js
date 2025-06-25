@@ -84,7 +84,7 @@ export default function ProdutoPage({ product }) {
                         <button onClick={() => setIsZoomModalOpen(true)} className="w-full cursor-zoom-in">
                             <div className="relative w-full aspect-square rounded-lg overflow-hidden border">
                                 {imageUrl ? (
-                                    <Image src={imageUrl} alt={product.nome} fill className="object-scale-down bg-white" priority />
+                                    <Image src={imageUrl} alt={product.nome} fill className="object-scale-down bg-white" />
                                 ) : (
                                     <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                                         <span className="text-gray-500">Sem Foto</span>

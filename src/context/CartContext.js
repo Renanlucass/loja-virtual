@@ -47,7 +47,6 @@ export function CartProvider({ children }) {
     }
   };
 
-  // Função para limpar o carrinho
   const clearCart = () => {
     setCartItems([]);
   };
@@ -57,7 +56,7 @@ export function CartProvider({ children }) {
     addToCart,
     removeFromCart,
     updateQuantity,
-    clearCart, // não esqueça de exportar aqui
+    clearCart,
   };
 
   return (

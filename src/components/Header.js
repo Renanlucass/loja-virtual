@@ -36,7 +36,6 @@ export default function Header() {
     setIsClient(true);
   }, []);
 
-  // Pega o termo de busca da URL (se existir)
   const initialSearch = router.query.search || '';
 
   return (
@@ -48,8 +47,10 @@ export default function Header() {
               <Image
                 src="/logo-atelie.jpg"
                 alt="Logo do Deusinha Ateliê"
-                layout="fill"
-                objectFit="contain"
+                fill
+                sizes="(max-width: 768px) 100vw, 33vw"
+                style={{ objectFit: 'contain' }}
+                priority
               />
             </div>
           </Link>
