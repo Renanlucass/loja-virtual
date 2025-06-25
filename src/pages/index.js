@@ -61,7 +61,7 @@ export default function HomePage({
     <main className="container mx-auto px-4 py-8">
       {bannerImage && (
         <section className="mb-12">
-          <div className="relative w-full h-48 sm:h-64 md:h-80 rounded-2xl shadow-lg overflow-hidden">
+          <div className="relative w-full h-60 sm:h-64 md:h-80 rounded-2xl shadow-lg overflow-hidden">
             <Image
               src={bannerImage.imagem_url}
               alt={bannerImage.titulo || 'Banner de divulgação'}
