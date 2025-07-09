@@ -61,20 +61,22 @@ export default function HomePage({
     <main className="container mx-auto px-4 py-8">
       {bannerImage && (
         <section className="mb-12">
-          <div className="relative w-full h-60 sm:h-64 md:h-80 rounded-2xl shadow-lg overflow-hidden">
+          <div className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
             <Image
               src={bannerImage.imagem_url}
               alt={bannerImage.titulo || 'Banner de divulgação'}
-              fill
-              className="object-cover"
+              width={1920}
+              height={640}
+              className="w-full h-auto object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex flex-col justify-end p-6 sm:p-8">
+            <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 pointer-events-none">
               <h2 className="text-white text-2xl sm:text-3xl font-bold drop-shadow-lg">{bannerImage.titulo}</h2>
               <p className="text-white text-sm sm:text-base mt-1 drop-shadow-lg">{bannerImage.descricao}</p>
             </div>
           </div>
         </section>
+
       )}
 
       <CategoryCarousel categorias={categorias} />
@@ -102,11 +104,10 @@ export default function HomePage({
                 <Link
                   href={`/?page=${currentPage - 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium ${
-                    currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                  }`}
+                  className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
+                    }`}
                   aria-disabled={currentPage === 1}
                 >
                   Anterior
@@ -117,11 +118,10 @@ export default function HomePage({
                     key={page}
                     href={`/?page=${page}&search=${encodeURIComponent(searchQuery)}`}
                     scroll={false}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium ${
-                      page === currentPage
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                    }`}
+                    className={`px-4 py-2 border rounded-md text-sm font-medium ${page === currentPage
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
+                      }`}
                   >
                     {page}
                   </Link>
@@ -130,11 +130,10 @@ export default function HomePage({
                 <Link
                   href={`/?page=${currentPage + 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium ${
-                    currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                  }`}
+                  className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === totalPages
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
+                    }`}
                   aria-disabled={currentPage === totalPages}
                 >
                   Próximo
@@ -166,6 +165,6 @@ export async function getStaticProps() {
       bannerImage: bannerImage || null,
       sliderImages: sliderImages || [],
     },
-    revalidate: 3600, 
+    revalidate: 3600,
   };
 }
