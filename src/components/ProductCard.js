@@ -71,11 +71,24 @@ export default function ProductCard({ product }) {
             </h3>
           </Link>
 
-          <p className="text-2xl font-bold text-purple-700 my-3">{formatPrice(product.preco)}</p>
+          <p className="text-2xl font-bold text-gray-700 my-3">
+            {formatPrice(product.preco)}
+          </p>
+
+          {product.vendedor && (
+            <div className="mb-3">
+              <p className="text-sm text-gray-500">
+                Vendido por
+              </p>
+              <p className="font-semibold text-gray-700">
+                {product.vendedor.nome}
+              </p>
+            </div>
+          )}
 
           <button
             onClick={handleOpenModal}
-            className="mt-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white w-full py-3 rounded-full font-semibold text-sm shadow-lg hover:from-purple-700 hover:to-pink-600 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed"
+            className="mt-2 bg-gradient-to-r from-gray-600 to-purple-900 text-white w-full py-3 rounded-full font-semibold text-sm shadow-lg hover:from-gray-900 hover:to-pink-600 transition-all duration-300 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed"
             disabled={availableStock <= 0}
           >
             {availableStock > 0 ? 'Adicionar ao Carrinho' : 'Sem estoque'}

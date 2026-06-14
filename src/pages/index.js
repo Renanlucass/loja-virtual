@@ -1,6 +1,5 @@
 import CategoryCarousel from '../components/CategoryCarousel';
 import ProductCard from '../components/ProductCard';
-import ImageSlider from '@/components/Slider';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -22,8 +21,6 @@ async function getApiData(endpoint) {
 
 export default function HomePage({
   categorias,
-  bannerImage,
-  sliderImages,
   produtosDestaque,
   totalCount,
 }) {
@@ -49,7 +46,9 @@ export default function HomePage({
     setSearchQuery(search);
     setIsLoading(true);
 
-    getApiData(`/produtos?destaque=true&page=${page}&limit=12&search=${encodeURIComponent(search)}`)
+    getApiData(
+      `/produtos?destaque=true&page=${page}&limit=12&search=${encodeURIComponent(search)}`
+    )
       .then((data) => {
         setProdutos(data?.products || []);
         setTotalCount(data?.totalCount || 0);
@@ -59,6 +58,9 @@ export default function HomePage({
 
   return (
     <main className="container mx-auto px-4 py-8">
+
+      {/* ❌ BANNER REMOVIDO / DESATIVADO */}
+      {/*
       {bannerImage && (
         <section className="mb-12">
           <div className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
@@ -71,19 +73,24 @@ export default function HomePage({
               priority
             />
             <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 pointer-events-none">
-              <h2 className="text-white text-2xl sm:text-3xl font-bold drop-shadow-lg">{bannerImage.titulo}</h2>
-              <p className="text-white text-sm sm:text-base mt-1 drop-shadow-lg">{bannerImage.descricao}</p>
+              <h2 className="text-white text-2xl sm:text-3xl font-bold drop-shadow-lg">
+                {bannerImage.titulo}
+              </h2>
+              <p className="text-white text-sm sm:text-base mt-1 drop-shadow-lg">
+                {bannerImage.descricao}
+              </p>
             </div>
           </div>
         </section>
-
       )}
+      */}
 
       <CategoryCarousel categorias={categorias} />
-      <ImageSlider images={sliderImages} />
 
       <section className="mt-12">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">Produtos em Destaque</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+          Produtos em Destaque
+        </h2>
 
         {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -104,11 +111,11 @@ export default function HomePage({
                 <Link
                   href={`/?page=${currentPage - 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === 1
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                    }`}
-                  aria-disabled={currentPage === 1}
+                  className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                    currentPage === 1
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
+                  }`}
                 >
                   Anterior
                 </Link>
@@ -118,10 +125,11 @@ export default function HomePage({
                     key={page}
                     href={`/?page=${page}&search=${encodeURIComponent(searchQuery)}`}
                     scroll={false}
-                    className={`px-4 py-2 border rounded-md text-sm font-medium ${page === currentPage
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                      }`}
+                    className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                      page === currentPage
+                        ? 'bg-purple-900 text-white'
+                        : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
+                    }`}
                   >
                     {page}
                   </Link>
@@ -130,11 +138,11 @@ export default function HomePage({
                 <Link
                   href={`/?page=${currentPage + 1}&search=${encodeURIComponent(searchQuery)}`}
                   scroll={false}
-                  className={`px-4 py-2 border rounded-md text-sm font-medium ${currentPage === totalPages
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
-                    }`}
-                  aria-disabled={currentPage === totalPages}
+                  className={`px-4 py-2 border rounded-md text-sm font-medium ${
+                    currentPage === totalPages
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-800 border-gray-300 hover:bg-purple-100'
+                  }`}
                 >
                   Próximo
                 </Link>
@@ -142,7 +150,9 @@ export default function HomePage({
             )}
           </>
         ) : (
-          <p className="text-center text-gray-600 mt-20">Nenhum produto em destaque no momento.</p>
+          <p className="text-center text-gray-600 mt-20">
+            Nenhum produto em destaque no momento.
+          </p>
         )}
       </section>
     </main>
@@ -150,11 +160,9 @@ export default function HomePage({
 }
 
 export async function getStaticProps() {
-  const [categorias, produtosDestaqueData, bannerImage, sliderImages] = await Promise.all([
+  const [categorias, produtosDestaqueData] = await Promise.all([
     getApiData('/categorias'),
     getApiData(`/produtos?destaque=true&page=1&limit=12`),
-    getApiData('/slider/banner'),
-    getApiData('/slider'),
   ]);
 
   return {
@@ -162,8 +170,6 @@ export async function getStaticProps() {
       categorias: categorias || [],
       produtosDestaque: produtosDestaqueData?.products || [],
       totalCount: produtosDestaqueData?.totalCount || 0,
-      bannerImage: bannerImage || null,
-      sliderImages: sliderImages || [],
     },
     revalidate: 3600,
   };

@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 function CartIcon() {
   return (
     <svg
-      className="h-7 w-7 text-gray-800 group-hover:text-black transition-colors"
+      className="h-7 w-7 text-white group-hover:text-purple-700 transition-colors"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
@@ -39,14 +39,16 @@ export default function Header() {
   const initialSearch = router.query.search || '';
 
   return (
-    <header className="bg-[#e6a6ba] shadow-sm sticky top-0 z-50">
+    <header className="bg-gray-900 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between space-x-4">
+
+          {/* LOGO */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="relative h-20 w-20 sm:h-16 sm:w-16 flex-shrink-0">
+            <div className="relative h-16 w-16 flex-shrink-0 bg-white rounded-xl p-1 shadow-sm">
               <Image
                 src="/logo-atelie.jpg"
-                alt="Logo do Deusinha Ateliê"
+                alt="Logo do Ateliê"
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 style={{ objectFit: 'contain' }}
@@ -55,18 +57,22 @@ export default function Header() {
             </div>
           </Link>
 
+          {/* SEARCH */}
           <div className="flex-1 max-w-full">
             <SearchBar initialQuery={initialSearch} />
           </div>
 
+          {/* CART */}
           <Link href="/carrinho" aria-label="Ver carrinho" className="relative group">
             <CartIcon />
+
             {isClient && distinctItemsCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md">
                 {distinctItemsCount}
               </span>
             )}
           </Link>
+
         </div>
       </div>
     </header>

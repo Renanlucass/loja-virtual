@@ -63,7 +63,7 @@ export default function CarrinhoPage() {
                                 </div>
                                 <div className="flex-grow">
                                     <p className="font-semibold text-base sm:text-lg">{item.nome}</p>
-                                    <p className="text-purple-700 text-lg sm:text-xl font-bold">{formatPrice(item.preco)}</p>
+                                    <p className="text-gray-700 text-lg sm:text-xl font-bold">{formatPrice(item.preco)}</p>
                                 </div>
 
                                 <div className="flex items-center space-x-1 sm:space-x-2">

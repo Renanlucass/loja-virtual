@@ -54,9 +54,20 @@ export default function ProdutoPage({ product }) {
     };
 
     const handleContactClick = () => {
-        const phoneNumber = '5589981016717';
-        const message = `Olá! Tenho interesse no produto: ${product.nome} - ${formatPrice(product.preco)}.`;
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+
+        if (!product.vendedor?.telefone) {
+            alert('Telefone do vendedor não informado.');
+            return;
+        }
+
+        const phoneNumber = product.vendedor.telefone.replace(/\D/g, '');
+
+        const message =
+            `Olá! Tenho interesse no produto: ${product.nome} - ${formatPrice(product.preco)}.`;
+
+        const whatsappUrl =
+            `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`;
+
         window.open(whatsappUrl, '_blank');
     };
 
@@ -72,7 +83,7 @@ export default function ProdutoPage({ product }) {
                 <div className="mb-8">
                     <Link
                         href="/"
-                        className="inline-flex items-center space-x-2 text-sm font-semibold text-purple-600 border border-purple-300 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
+                        className="inline-flex items-center space-x-2 text-sm font-semibold text-gray-600 border border-gray-900 rounded-full py-2 px-4 hover:bg-purple-600 hover:text-white hover:border-purple-600 transition-colors"
                     >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                         <span>Voltar para os produtos</span>
@@ -99,6 +110,24 @@ export default function ProdutoPage({ product }) {
                             <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">{product.nome}</h1>
                             <p className="text-3xl text-gray-800 mt-4">{formatPrice(product.preco)}</p>
 
+                            {product.vendedor && (
+                                <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                                    <p className="text-sm text-gray-500">
+                                        Vendedor
+                                    </p>
+
+                                    <p className="font-bold text-lg text-gray-800">
+                                        {product.vendedor.nome}
+                                    </p>
+
+                                    {product.vendedor.telefone && (
+                                        <p className="text-sm text-gray-600 mt-1">
+                                            WhatsApp: {product.vendedor.telefone}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                             {product.descricao && (
                                 <div className="mt-8 border-t pt-8">
                                     <h2 className="text-lg font-semibold text-gray-800 mb-4">Descrição</h2>
@@ -112,18 +141,18 @@ export default function ProdutoPage({ product }) {
                         <div className="mt-8 space-y-4">
                             <button
                                 onClick={handleOpenModal}
-                                className="w-full bg-purple-600 text-white py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                className="w-full bg-gray-700 text-white py-3 rounded-md text-lg font-semibold hover:bg-purple-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 disabled={availableStock <= 0}
                             >
                                 {availableStock > 0 ? 'Adicionar ao Pedido' : 'Sem Estoque'}
                             </button>
-                            <Link href="/" className="w-full block text-center border-2 border-purple-600 text-purple-600 py-3 rounded-md text-lg font-semibold hover:bg-purple-50 transition-colors">
+                            <Link href="/" className="w-full block text-center border-2 border-gray-600 text-gray-900 py-3 rounded-md text-lg font-semibold hover:bg-purple-50 transition-colors">
                                 Continuar comprando
                             </Link>
 
                             <div className="text-center pt-4">
                                 <p className="text-sm text-gray-500 mb-2">Ficou com alguma dúvida?</p>
-                                <button onClick={handleContactClick} className="font-semibold text-purple-600 border-b border-purple-600 hover:text-purple-800 hover:border-purple-800 transition-colors">
+                                <button onClick={handleContactClick} className="font-semibold text-gray-700 border-b border-gray-600 hover:text-purple-800 hover:border-purple-800 transition-colors">
                                     Falar com o vendedor
                                 </button>
                             </div>
@@ -205,8 +234,8 @@ export default function ProdutoPage({ product }) {
 
 export async function getStaticPaths() {
     return {
-        paths: [], 
-        fallback: 'blocking', 
+        paths: [],
+        fallback: 'blocking',
     };
 }
 
