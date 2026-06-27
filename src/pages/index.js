@@ -59,32 +59,6 @@ export default function HomePage({
   return (
     <main className="container mx-auto px-4 py-8">
 
-      {/* ❌ BANNER REMOVIDO / DESATIVADO */}
-      {/*
-      {bannerImage && (
-        <section className="mb-12">
-          <div className="w-full max-w-7xl mx-auto rounded-2xl overflow-hidden shadow-lg">
-            <Image
-              src={bannerImage.imagem_url}
-              alt={bannerImage.titulo || 'Banner de divulgação'}
-              width={1920}
-              height={640}
-              className="w-full h-auto object-cover"
-              priority
-            />
-            <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-8 pointer-events-none">
-              <h2 className="text-white text-2xl sm:text-3xl font-bold drop-shadow-lg">
-                {bannerImage.titulo}
-              </h2>
-              <p className="text-white text-sm sm:text-base mt-1 drop-shadow-lg">
-                {bannerImage.descricao}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
-      */}
-
       <CategoryCarousel categorias={categorias} />
 
       <section className="mt-12">

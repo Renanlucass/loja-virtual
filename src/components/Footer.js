@@ -32,64 +32,11 @@ export default function Footer() {
         <footer className="bg-gray-900 text-gray-300 border-t border-gray-800">
             <div className="container mx-auto px-4 py-10">
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-10"></div>
 
-                    {/* CONTATO */}
-                    <div>
-                        <h3 className="text-lg font-bold text-purple-400 mb-4">
-                            Atendimento
-                        </h3>
-
-                        <ul className="space-y-3">
-
-                            <li className="flex items-center space-x-3">
-                                <a
-                                    href={loja.whatsappLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center space-x-3 hover:text-white transition"
-                                >
-                                    <WhatsAppIcon />
-                                    <span>{loja.telefone}</span>
-                                </a>
-                            </li>
-
-                            <li className="flex items-center space-x-3">
-                                <MailIcon />
-                                <span>{loja.email}</span>
-                            </li>
-
-                        </ul>
-                    </div>
-
-                    {/* SOBRE */}
-                    <div>
-                        <h3 className="text-lg font-bold text-purple-400 mb-4">
-                            Sobre a loja
-                        </h3>
-
-                        <p className="text-sm leading-relaxed text-gray-400">
-                            Loja online especializada em produtos selecionados com qualidade,
-                            segurança e entrega rápida.
-                        </p>
-                    </div>
-
-                    {/* PAGAMENTO */}
-                    <div>
-                        <h3 className="text-lg font-bold text-purple-400 mb-4">
-                            Pagamento
-                        </h3>
-
-                        <p className="text-sm text-gray-400">
-                            Aceitamos Pix, cartão de crédito e débito.
-                        </p>
-                    </div>
-
-                </div>
-
-                {/* RODAPÉ FINAL */}
-                <div className="mt-10 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
-                    © {new Date().getFullYear()} Sua Loja — Todos os direitos reservados
+                    
+                <div className="mt-10 pt-6 border-t border-gray-800 text-center text-xl text-gray-500">
+                    © {new Date().getFullYear()} Vitrine Já — Todos os direitos reservados
                 </div>
 
             </div>

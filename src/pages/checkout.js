@@ -21,22 +21,24 @@ export default function CheckoutPage() {
   });
 
   const [totalPedido, setTotalPedido] = useState(subtotal);
-
   const [finalOrderData, setFinalOrderData] = useState(null);
-
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const calculateTotalWithFees = (subtotal, pagamento, tipoCartao, parcelas) => {
+  const calculateTotalWithFees = (
+    subtotal,
+    pagamento,
+    tipoCartao,
+    parcelas
+  ) => {
     let total = subtotal;
 
     if (pagamento === 'cartao') {
       if (tipoCartao === 'credito') {
-        if (parcelas === 1) total *= 1.05; // +5%
-        else if (parcelas >= 2 && parcelas <= 3) total *= 1.054; // +5.4%
+        if (parcelas === 1) total *= 1.05;
+        else if (parcelas >= 2 && parcelas <= 3) total *= 1.054;
       } else if (tipoCartao === 'debito') {
-        total *= 1.02; // +2%
+        total *= 1.02;
       }
     }
 
@@ -50,16 +52,23 @@ export default function CheckoutPage() {
       partialFormData.tipoCartao,
       partialFormData.parcelas
     );
+
     setTotalPedido(novoTotal);
   }, [partialFormData, subtotal]);
 
   const handlePartialFormChange = (data) => {
-    setPartialFormData((prev) => ({ ...prev, ...data }));
+    setPartialFormData((prev) => ({
+      ...prev,
+      ...data,
+    }));
   };
 
-  // Ao enviar formulário final, abre modal com resumo
   const handleFormSubmit = (formData, deliveryMethod) => {
-    setFinalOrderData({ formData, deliveryMethod });
+    setFinalOrderData({
+      formData,
+      deliveryMethod,
+    });
+
     setIsSummaryModalOpen(true);
   };
 
@@ -67,54 +76,98 @@ export default function CheckoutPage() {
     if (!finalOrderData) return;
 
     const { formData, deliveryMethod } = finalOrderData;
+
     setIsSubmitting(true);
 
     try {
-      let enderecoCompleto = 'Retirar no local (a combinar com o vendedor)';
+      let enderecoCompleto =
+        'Retirar no local (a combinar com o vendedor)';
+
       if (deliveryMethod === 'entrega') {
         enderecoCompleto = `${formData.rua}, Nº ${formData.numero}, ${formData.bairro}, ${formData.cidade} - ${formData.estado}, CEP: ${formData.cep}`;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/pedidos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome_cliente: formData.nome,
-          telefone_cliente: formData.telefone,
-          endereco_completo: enderecoCompleto,
-          metodo_entrega: deliveryMethod,
-          forma_pagamento: formData.pagamento,
-          tipo_cartao: formData.tipoCartao || null,
-          parcelas: formData.parcelas || 1,
-          itens_pedido: cartItems,
-          subtotal,
-          total_pedido: totalPedido,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/pedidos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nome_cliente: formData.nome,
+            telefone_cliente: formData.telefone,
+            endereco_completo: enderecoCompleto,
+            metodo_entrega: deliveryMethod,
+            forma_pagamento: formData.pagamento,
+            tipo_cartao: formData.tipoCartao || null,
+            parcelas: formData.parcelas || 1,
+            itens_pedido: cartItems,
+            subtotal,
+            total_pedido: totalPedido,
+          }),
+        }
+      );
 
-      if (!response.ok) throw new Error('Falha ao criar o pedido na API.');
+      if (!response.ok) {
+        throw new Error('Falha ao criar o pedido.');
+      }
 
       const novoPedido = await response.json();
 
-      if (clearCart) clearCart();
+      // ==========================
+      // DADOS DO VENDEDOR
+      // ==========================
 
-      const phoneNumber = '5589981016717';
+      const vendedor = cartItems[0]?.vendedor;
+
+      if (!vendedor) {
+        throw new Error('Vendedor não encontrado.');
+      }
+
+      const phoneNumber = vendedor.telefone.replace(/\D/g, '');
+
       const receiptUrl = `${window.location.origin}/pedido/${novoPedido.id}`;
-      const message = `Olá, Deusinha Ateliê! 🛍️\n\nMeu nome é *${formData.nome}* e acabei de finalizar o pedido *#${novoPedido.id}*.\n\nPode ver o resumo completo aqui:\n${receiptUrl}\n\nFico no aguardo das próximas instruções para o pagamento. Obrigado(a)! 😊`;
-      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message.trim())}`;
+
+      const message = `
+Olá, ${vendedor.nome}! 🛍️
+
+Meu nome é *${formData.nome}* e acabei de finalizar o pedido *#${novoPedido.id}*.
+
+Você pode visualizar o resumo completo do pedido através do link abaixo:
+
+${receiptUrl}
+
+Fico no aguardo das próximas instruções. Obrigado(a)! 😊
+      `;
+
+      if (clearCart) {
+        clearCart();
+      }
+
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=55${phoneNumber}&text=${encodeURIComponent(
+        message.trim()
+      )}`;
 
       window.open(whatsappUrl, '_blank');
+
       router.push('/');
     } catch (error) {
-      console.error('Erro ao finalizar pedido:', error);
-      alert('Não foi possível finalizar o seu pedido. Tente novamente.');
+      console.error(error);
+
+      alert(
+        'Não foi possível finalizar o pedido. Tente novamente.'
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const formatPrice = (value) =>
-    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    value.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
 
   return (
     <>
@@ -131,8 +184,14 @@ export default function CheckoutPage() {
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
+
             <span>Voltar ao carrinho</span>
           </Link>
         </div>

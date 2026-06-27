@@ -47,8 +47,8 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-3">
             <div className="relative h-16 w-16 flex-shrink-0 bg-white rounded-xl p-1 shadow-sm">
               <Image
-                src="/logo-atelie.jpg"
-                alt="Logo do Ateliê"
+                src="/vitrine-ja.png"
+                alt="Logo da Vitrine"
                 fill
                 sizes="(max-width: 768px) 100vw, 33vw"
                 style={{ objectFit: 'contain' }}
