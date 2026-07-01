@@ -28,7 +28,7 @@ export default function App({ Component, pageProps }) {
   return (
     <CartProvider>
       <Head>
-        <link rel="icon" href="/logo-maria.png" />
+        <link rel="icon" href="/vitrine-ja.png" />
       </Head>
       <Layout>
         <Component {...pageProps} />
